@@ -6,6 +6,7 @@
 #include "Decide.h"
 #include "DecideDlg.h"
 #include "afxdialogex.h"
+#include "MSG.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -183,6 +184,22 @@ void CDecideDlg::OnBnClickedOk()
 	key:answer1 value:m_Answer1 type:发起投票
 	key:answer2 value:m_Answer2 type:发起投票
 	*/
+
+	theApp.setType(MSG_STARTVOTE);
+
+	_bstr_t b(m_Question);
+	char* question = b;
+	_bstr_t b(m_Answer1);
+	char* answer1 = b;
+	_bstr_t b(m_Answer2);
+	char* answer2 = b;
+
+	LCHVOTE que;
+	strcpy_s(que.question, question);
+	strcpy_s(que.answer1, answer1);
+	strcpy_s(que.answer2, answer2);
+
+	theApp.setVoteQue(que);
 
 	CDialogEx::OnOK();
 }

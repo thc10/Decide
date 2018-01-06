@@ -36,6 +36,8 @@ public:
 	vector<IPINFO> IPList;	//IP容器
 	int type;			//gossip同步的类型
 	int version;		//版本号
+	LCHVOTE VoteQue;	//投票问题和答案
+	CHOICE MyChoice;	
 // 实现
 
 	CServerSocket* GetServerSocket() const;
@@ -46,7 +48,11 @@ public:
 	char* prepareMsg(int type);
 public:
 	void setVersion(int version);
-	void VersionCompare(int receive_version, CClientSocket *socket);
+	void setType(int type);
+	void setVoteQue(LCHVOTE Que);
+	void setChoice(CHOICE choice);
+	void VersionCompare(int receive_version, char* ip, int port);
+	void SendListMsg(char* ip, int port);
 };
 
 extern CDecideApp theApp;

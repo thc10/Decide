@@ -59,14 +59,13 @@ void CClientSocket::OnReceive(int nErrorCode)
 		}
 		case MSG_VOTE:		//收到的投票结果
 		{
-			HandleLoginMsg(pMsg);
+			HandleVoteMsg(pMsg);
 			break;
 		}
 		case MSG_LIST:		//更新本地用户信息表
 		{
-			delete pMsg;
-			pMsg = new char[msg.length];
-			Receive(pMsg, msg.length);
+			HandleListMsg(pMsg);
+			break;
 		}
 		case MSG_VERSION:	//版本信息维护
 		{
@@ -75,7 +74,7 @@ void CClientSocket::OnReceive(int nErrorCode)
 		}
 		case MSG_REQUEST:	//请求用户消息列表
 		{
-			HandleRequstMsg(this);
+			HandleRequstMsg(pMsg);
 		}
 	}
 	CSocket::OnReceive(nErrorCode);

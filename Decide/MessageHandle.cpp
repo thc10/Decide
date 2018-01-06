@@ -39,7 +39,7 @@ void HandleLoginMsg(char *pMsg)
 
 	cJSON_Delete(root);
 
-	//AfxMessageBox(_T("新的用户加入"));
+	theApp.SendListMsg(ip, port);
 	theApp.setVersion(theApp.version + 1);
 }
 
@@ -61,9 +61,24 @@ void HandleVersionMsg(char *pMsg) {
 		return;
 	}
 	int version = temp->valueint;
-	CString str;
-	str.Format(_T("version is %d。"), theApp.version);
-	AfxMessageBox(str);
+	temp = cJSON_GetObjectItem(root, "ip");
+	if (!temp)
+	{
+		AfxMessageBox(_T("param错误"));
+		cJSON_Delete(root);
+		return;
+	}
+	char *ip = temp->valuestring;
+	temp = cJSON_GetObjectItem(root, "port");
+	if (!temp)
+	{
+		AfxMessageBox(_T("param error"));
+		return;
+	}
+	int port = temp->valueint;
+
+	if (version != theApp.version)
+		theApp.VersionCompare(version, ip, port);
 	cJSON_Delete(root);
 }
 
@@ -84,7 +99,7 @@ void HandleListMsg(char *pMsg)
 		return;
 	}
 
-	theApp.version = temp->valueint;
+	theApp.setVersion(temp->valueint);
 	temp = cJSON_GetObjectItem(json_root, "data");
 	if (!temp)
 	{
@@ -126,43 +141,38 @@ void HandleListMsg(char *pMsg)
 	cJSON_Delete(json_root);
 }
 
-void HandleRequstMsg(CClientSocket *socket)
+void HandleRequstMsg(char *pMsg)
 {
-	MSGHEAD msg;
+	cJSON *root = NULL;
+	cJSON *temp = NULL;
 
-	cJSON *json_root = cJSON_CreateObject();
-	if (!json_root)
-	{
-		AfxMessageBox(_T("Memory malloc error"));
-		return;
-	}
-
-	cJSON *root = cJSON_CreateArray();
+	root = cJSON_Parse(pMsg);
 	if (!root)
 	{
-		AfxMessageBox(_T("Memory malloc error"));
+		AfxMessageBox(_T("param错误"));
+		cJSON_Delete(root);
 		return;
 	}
 
-	cJSON_AddNumberToObject(json_root, "version", theApp.version);
-	int num = theApp.IPList.size();
-
-	for (int i = 0; i < num; i++)
+	temp = cJSON_GetObjectItem(root, "ip");
+	if (!temp)
 	{
-		cJSON *temp = cJSON_CreateObject();
-		cJSON_AddStringToObject(temp, "ip", theApp.IPList[i].ip);
-		cJSON_AddNumberToObject(temp, "port", theApp.IPList[i].port);
-		cJSON_AddItemToArray(root, temp);
+		AfxMessageBox(_T("param错误"));
+		cJSON_Delete(root);
+		return;
 	}
-	cJSON_AddItemToObject(json_root, "data", root);
+	char *ip = temp->valuestring;
+	temp = cJSON_GetObjectItem(root, "port");
+	if (!temp)
+	{
+		AfxMessageBox(_T("param error"));
+		return;
+	}
+	int port = temp->valueint;
 
-	char *pBuff = cJSON_PrintUnformatted(json_root);
+	theApp.SendListMsg(ip, port);
+}
 
-	msg.type = MSG_LIST;
-	msg.length = strlen(pBuff);
-
-	socket->SendMSG(pBuff, &msg);
-
-	cJSON_Delete(root);
-	free(pBuff);
+void HandleVoteMsg(char *pMsg) {
+	
 }
