@@ -43,6 +43,9 @@ public:
 	BOOL WChar2MByte(LPCWSTR srcBuff, LPSTR destBuff, int nlen);
 	static UINT gossip(LPVOID lpParam);
 	char* prepareMsg(int type);
+
+public:
+	void setVersion(int version);
 };
 
 extern CDecideApp theApp;

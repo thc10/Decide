@@ -40,7 +40,7 @@ void HandleLoginMsg(char *pMsg)
 	cJSON_Delete(root);
 
 	//AfxMessageBox(_T("新的用户加入"));
-	theApp.version++;
+	theApp.setVersion(theApp.version + 1);
 }
 
 void HandleVersionMsg(char *pMsg) {

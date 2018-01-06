@@ -141,6 +141,14 @@ BOOL CDecideApp::InitInstance()
 			pClient->Close();
 			delete pClient;
 		}
+		else {
+			_bstr_t b(m_IP);
+			char* ip = b;
+			IPINFO NewNode;
+			strncpy(NewNode.ip, ip, 20);
+			NewNode.port = m_Port;
+			theApp.IPList.push_back(NewNode);
+		}
 		type = MSG_VERSION;
 		version = -1;
 		AfxBeginThread(gossip, this);
@@ -248,6 +256,10 @@ char* CDecideApp::prepareMsg(int type) {
 	else {
 		return NULL;
 	}
+}
+
+void CDecideApp::setVersion(int version) {
+	this->version = version;
 }
 
 

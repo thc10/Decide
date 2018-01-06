@@ -5,17 +5,20 @@ const int REQUEST = 2;		//本机IP以及侦听端口信息
 const int MSG_LIST = 3;		//用户列表
 const int MSG_VOTE = 4;		//投票信息
 
-							//消息头
-typedef struct msg {
-	int type;
-	int length;
-}MSGHEAD;
-
 // IP及侦听端口信息
 typedef struct ipinfo {
 	char ip[20];
 	int port;
 }IPINFO;
+
+//消息头
+typedef struct msg {
+	int type;
+	int length;
+	IPINFO ipinfo;
+}MSGHEAD;
+
+
 
 //发起投票：由集群中的某一个节点发起投票，包括问题和答案，发送给集群中的所有节点（包括发起投票的节点）
 typedef struct lchvote
