@@ -8,6 +8,7 @@
 #include "LinkDlg.h"
 #include "ClientSocket.h"
 #include "ServerSocket.h"
+#include "cJSON.h"
 #include <time.h>
 using namespace std;
 #ifdef _DEBUG
@@ -123,18 +124,21 @@ BOOL CDecideApp::InitInstance()
 				return false;
 			}
 			MSGHEAD msg;
-			IPINFO localip;
+			cJSON *root = cJSON_CreateObject();
+			_bstr_t b(m_IP);
+			char* ip = b;
+			cJSON_AddStringToObject(root, "ip", ip);
+			cJSON_AddNumberToObject(root, "port", m_Port);
+			char *pBuf = cJSON_PrintBuffered(root, 0, 0);
+
 			msg.type = MSG_LOGIN;
-			msg.length = sizeof(localip);
-			theApp.WChar2MByte(m_IP, localip.ip, sizeof(localip));
-			localip.port = m_Port;
-			pClient->SendMSG((char*)&localip, &msg);
-			Sleep(3000);
+			msg.length = strlen(pBuf);
+			pClient->SendMSG(pBuf, &msg);
 			pClient->Close();
 			delete pClient;
 		}
 		type = MSG_VERSION;
-		AfxBeginThread(gossip, this);
+		//AfxBeginThread(gossip, this);
 		CDecideDlg dlg;
 		m_pMainWnd = &dlg;
 		nResponse = dlg.DoModal();
@@ -207,17 +211,20 @@ UINT CDecideApp::gossip(LPVOID lpParam) {
 		}
 		srand((unsigned)time(NULL));
 		select = rand() % num;
+		char *ip = theApp.IPList[select].ip;
+		int port = theApp.IPList[select].port;
 		CClientSocket *pClient = new CClientSocket();
-		if (!pClient || !pClient->Create() || !pClient->Connect((LPWSTR)theApp.IPList[select - 1].ip, (UINT)theApp.IPList[select - 1].port))
-		{
+		if (!pClient)
 			continue;
-		}
+		if (!pClient->Create())
+			continue;
+		if (!pClient->Connect((LPWSTR)theApp.IPList[select].ip, (UINT)theApp.IPList[select].port))
+			continue;
 		MSGHEAD msg;
 		char* msg_toBsend = theApp.prepareMsg(theApp.type);
 		msg.type = theApp.type;
 		msg.length = sizeof(msg_toBsend);
 		pClient->SendMSG((char*)&msg_toBsend, &msg);
-		AfxMessageBox(_T("send Msg"));
 		Sleep(2000);
 		pClient->Close();
 		delete pClient;
@@ -227,6 +234,7 @@ UINT CDecideApp::gossip(LPVOID lpParam) {
 char* CDecideApp::prepareMsg(int type) {
 	if (type == MSG_VERSION) {
 		int num = IPList.size();
+		return "msg";
 	}
 	else if (type == MSG_VOTE) {
 

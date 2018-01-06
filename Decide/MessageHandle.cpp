@@ -7,16 +7,29 @@
 void HandleLoginMsg(char *pMsg)
 {
 	cJSON *root = NULL;
-
+	cJSON *temp = NULL;
 	root = cJSON_Parse(pMsg);
-	if (root)
+	if (!root)
 	{
 		AfxMessageBox(_T("消息格式错误"));
 		return;
 	}
 
-	char *ip = cJSON_GetObjectItem(root, "ip")->valuestring;
-	int port = cJSON_GetObjectItem(root, "port")->valueint;
+	temp = cJSON_GetObjectItem(root, "ip");
+	if (!temp)
+	{
+		AfxMessageBox(_T("param错误"));
+		cJSON_Delete(root);
+		return;
+	}
+	char *ip = temp->valuestring;
+	temp = cJSON_GetObjectItem(root, "port");
+	if (!temp)
+	{
+		AfxMessageBox(_T("param error"));
+		return;
+	}
+	int port = temp->valueint;
 
 	//加入表项
 	IPINFO NewNode;
@@ -25,11 +38,15 @@ void HandleLoginMsg(char *pMsg)
 	theApp.IPList.push_back(NewNode);
 
 	cJSON_Delete(root);
+
+	AfxMessageBox(_T("新的用户加入"));
 }
 
 void HandleVersionMsg(char *pMsg) {
 	cJSON *root = NULL;
 
+	AfxMessageBox(_T("recieve version MSg"));
+	/*
 	root = cJSON_Parse(pMsg);
 	if (root)
 	{
@@ -39,7 +56,7 @@ void HandleVersionMsg(char *pMsg) {
 
 	int version = cJSON_GetObjectItem(root, "version")->valueint;
 
-	cJSON_Delete(root);
+	cJSON_Delete(root);*/
 }
 
 void HandleRequstMsg(char *pMsg) {

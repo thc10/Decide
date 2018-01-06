@@ -43,7 +43,7 @@ void CClientSocket::OnReceive(int nErrorCode)
 	delete pMsg;
 	pMsg = new char[msg.length];
 	if (Receive(pMsg, msg.length) != msg.length) {
-		AfxMessageBox(_T("收到数据有误"));
+		//AfxMessageBox(_T("收到数据有误"));
 		return;
 	}
 	switch (msg.type)
@@ -77,7 +77,7 @@ void CClientSocket::OnReceive(int nErrorCode)
 BOOL CClientSocket::SendMSG(LPSTR pBuff, MSGHEAD* msg)
 {
 	//生成协议头
-	int i = Send(msg, sizeof(MSG));
+	int i = Send(msg, sizeof(MSGHEAD));
 	if (i == SOCKET_ERROR)
 	{
 		AfxMessageBox(_T("发送错误！"));
