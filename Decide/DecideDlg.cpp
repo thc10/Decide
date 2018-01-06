@@ -51,6 +51,9 @@ END_MESSAGE_MAP()
 
 CDecideDlg::CDecideDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_DECIDE_DIALOG, pParent)
+	, m_Question(_T(""))
+	, m_Answer1(_T(""))
+	, m_Answer2(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -58,6 +61,9 @@ CDecideDlg::CDecideDlg(CWnd* pParent /*=NULL*/)
 void CDecideDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_EDIT_ANSWER1, m_Answer1);
+	DDX_Text(pDX, IDC_EDIT_ANSWER2, m_Answer2);
+	DDX_Text(pDX, IDC_EDIT_QUESTION, m_Question);
 }
 
 BEGIN_MESSAGE_MAP(CDecideDlg, CDialogEx)
@@ -154,3 +160,29 @@ HCURSOR CDecideDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+void CDecideDlg::OnBnClickedOk()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	UpdateData();  //用来刷新数据
+	if (m_Question.IsEmpty())
+	{
+		AfxMessageBox(_T("问题不能为空！"));
+		return;
+	}
+	if (m_Answer1.IsEmpty() || m_Answer2.IsEmpty())
+	{
+		AfxMessageBox(_T("选项不能为空！"));
+		return;
+	}
+
+	/*
+	发送：
+	key:question value:m_Question type:发起投票
+	key:answer1 value:m_Answer1 type:发起投票
+	key:answer2 value:m_Answer2 type:发起投票
+	*/
+
+	CDialogEx::OnOK();
+}

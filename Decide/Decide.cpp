@@ -1,5 +1,5 @@
 
-// Decide.cpp : ¶¨ÒåÓ¦ÓÃ³ÌĞòµÄÀàĞĞÎª¡£
+// Decide.cpp : å®šä¹‰åº”ç”¨ç¨‹åºçš„ç±»è¡Œä¸ºã€‚
 //
 
 #include "stdafx.h"
@@ -22,34 +22,34 @@ BEGIN_MESSAGE_MAP(CDecideApp, CWinApp)
 END_MESSAGE_MAP()
 
 
-// CDecideApp ¹¹Ôì
+// CDecideApp æ„é€ 
 
 CDecideApp::CDecideApp()
 {
-	// Ö§³ÖÖØĞÂÆô¶¯¹ÜÀíÆ÷
+	// æ”¯æŒé‡æ–°å¯åŠ¨ç®¡ç†å™¨
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_RESTART;
 
-	// TODO: ÔÚ´Ë´¦Ìí¼Ó¹¹Ôì´úÂë£¬
-	// ½«ËùÓĞÖØÒªµÄ³õÊ¼»¯·ÅÖÃÔÚ InitInstance ÖĞ
+	// TODO: åœ¨æ­¤å¤„æ·»åŠ æ„é€ ä»£ç ï¼Œ
+	// å°†æ‰€æœ‰é‡è¦çš„åˆå§‹åŒ–æ”¾ç½®åœ¨ InitInstance ä¸­
 }
 
 
-// Î¨Ò»µÄÒ»¸ö CDecideApp ¶ÔÏó
+// å”¯ä¸€çš„ä¸€ä¸ª CDecideApp å¯¹è±¡
 
 CDecideApp theApp;
 
 
-// CDecideApp ³õÊ¼»¯
+// CDecideApp åˆå§‹åŒ–
 
 BOOL CDecideApp::InitInstance()
 {
-	// Èç¹ûÒ»¸öÔËĞĞÔÚ Windows XP ÉÏµÄÓ¦ÓÃ³ÌĞòÇåµ¥Ö¸¶¨Òª
-	// Ê¹ÓÃ ComCtl32.dll °æ±¾ 6 »ò¸ü¸ß°æ±¾À´ÆôÓÃ¿ÉÊÓ»¯·½Ê½£¬
-	//ÔòĞèÒª InitCommonControlsEx()¡£  ·ñÔò£¬½«ÎŞ·¨´´½¨´°¿Ú¡£
+	// å¦‚æœä¸€ä¸ªè¿è¡Œåœ¨ Windows XP ä¸Šçš„åº”ç”¨ç¨‹åºæ¸…å•æŒ‡å®šè¦
+	// ä½¿ç”¨ ComCtl32.dll ç‰ˆæœ¬ 6 æˆ–æ›´é«˜ç‰ˆæœ¬æ¥å¯ç”¨å¯è§†åŒ–æ–¹å¼ï¼Œ
+	//åˆ™éœ€è¦ InitCommonControlsEx()ã€‚  å¦åˆ™ï¼Œå°†æ— æ³•åˆ›å»ºçª—å£ã€‚
 	INITCOMMONCONTROLSEX InitCtrls;
 	InitCtrls.dwSize = sizeof(InitCtrls);
-	// ½«ËüÉèÖÃÎª°üÀ¨ËùÓĞÒªÔÚÓ¦ÓÃ³ÌĞòÖĞÊ¹ÓÃµÄ
-	// ¹«¹²¿Ø¼şÀà¡£
+	// å°†å®ƒè®¾ç½®ä¸ºåŒ…æ‹¬æ‰€æœ‰è¦åœ¨åº”ç”¨ç¨‹åºä¸­ä½¿ç”¨çš„
+	// å…¬å…±æ§ä»¶ç±»ã€‚
 	InitCtrls.dwICC = ICC_WIN95_CLASSES;
 	InitCommonControlsEx(&InitCtrls);
 
@@ -64,62 +64,62 @@ BOOL CDecideApp::InitInstance()
 
 	AfxEnableControlContainer();
 
-	// ´´½¨ shell ¹ÜÀíÆ÷£¬ÒÔ·À¶Ô»°¿ò°üº¬
-	// ÈÎºÎ shell Ê÷ÊÓÍ¼¿Ø¼ş»ò shell ÁĞ±íÊÓÍ¼¿Ø¼ş¡£
+	// åˆ›å»º shell ç®¡ç†å™¨ï¼Œä»¥é˜²å¯¹è¯æ¡†åŒ…å«
+	// ä»»ä½• shell æ ‘è§†å›¾æ§ä»¶æˆ– shell åˆ—è¡¨è§†å›¾æ§ä»¶ã€‚
 	CShellManager *pShellManager = new CShellManager;
 
-	// ¼¤»î¡°Windows Native¡±ÊÓ¾õ¹ÜÀíÆ÷£¬ÒÔ±ãÔÚ MFC ¿Ø¼şÖĞÆôÓÃÖ÷Ìâ
+	// æ¿€æ´»â€œWindows Nativeâ€è§†è§‰ç®¡ç†å™¨ï¼Œä»¥ä¾¿åœ¨ MFC æ§ä»¶ä¸­å¯ç”¨ä¸»é¢˜
 	CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
 
-	// ±ê×¼³õÊ¼»¯
-	// Èç¹ûÎ´Ê¹ÓÃÕâĞ©¹¦ÄÜ²¢Ï£Íû¼õĞ¡
-	// ×îÖÕ¿ÉÖ´ĞĞÎÄ¼şµÄ´óĞ¡£¬ÔòÓ¦ÒÆ³ıÏÂÁĞ
-	// ²»ĞèÒªµÄÌØ¶¨³õÊ¼»¯Àı³Ì
-	// ¸ü¸ÄÓÃÓÚ´æ´¢ÉèÖÃµÄ×¢²á±íÏî
-	// TODO: Ó¦ÊÊµ±ĞŞ¸Ä¸Ã×Ö·û´®£¬
-	// ÀıÈçĞŞ¸ÄÎª¹«Ë¾»ò×éÖ¯Ãû
+	// æ ‡å‡†åˆå§‹åŒ–
+	// å¦‚æœæœªä½¿ç”¨è¿™äº›åŠŸèƒ½å¹¶å¸Œæœ›å‡å°
+	// æœ€ç»ˆå¯æ‰§è¡Œæ–‡ä»¶çš„å¤§å°ï¼Œåˆ™åº”ç§»é™¤ä¸‹åˆ—
+	// ä¸éœ€è¦çš„ç‰¹å®šåˆå§‹åŒ–ä¾‹ç¨‹
+	// æ›´æ”¹ç”¨äºå­˜å‚¨è®¾ç½®çš„æ³¨å†Œè¡¨é¡¹
+	// TODO: åº”é€‚å½“ä¿®æ”¹è¯¥å­—ç¬¦ä¸²ï¼Œ
+	// ä¾‹å¦‚ä¿®æ”¹ä¸ºå…¬å¸æˆ–ç»„ç»‡å
 	SetRegistryKey(_T("TALK"));
 	
 	m_Socket = new CServerSocket();
 	if (!m_Socket)
 	{
-		AfxMessageBox(_T("¶¯Ì¬´´½¨·şÎñÆ÷Ì×½Ó×Ö³ö´í£¡"));
+		AfxMessageBox(_T("åŠ¨æ€åˆ›å»ºæœåŠ¡å™¨å¥—æ¥å­—å‡ºé”™ï¼"));
 		return false;
 	}
 	CLinkDlg Linkdlg;
 	INT_PTR nResponse = Linkdlg.DoModal();
 	if (nResponse == IDOK)
 	{
-		// µ±ÓÃ»§ÊäÈëIPºÍ¶Ë¿ÚĞÅÏ¢ºó£¬´´½¨±¾»úÖ¸¶¨¶Ë¿ÚµÄ·şÎñÆ÷Ì×½Ó×Ö
+		// å½“ç”¨æˆ·è¾“å…¥IPå’Œç«¯å£ä¿¡æ¯åï¼Œåˆ›å»ºæœ¬æœºæŒ‡å®šç«¯å£çš„æœåŠ¡å™¨å¥—æ¥å­—
 		if (!m_Socket->Create(theApp.m_Port))
 		{
-			AfxMessageBox(_T("´´½¨Ì×½Ó×Ö´íÎó£¡"));
+			AfxMessageBox(_T("åˆ›å»ºå¥—æ¥å­—é”™è¯¯ï¼"));
 			m_Socket->Close();
 			return false;
 		}
 		if (!m_Socket->Listen())
 		{
-			AfxMessageBox(_T("¼àÌıÊ§°Ü£¡"));
+			AfxMessageBox(_T("ç›‘å¬å¤±è´¥ï¼"));
 			m_Socket->Close();
 			return false;
 		}
-		// ÅĞ¶ÏÊÇ·ñ¼ÓÈëÈºÁÄ
+		// åˆ¤æ–­æ˜¯å¦åŠ å…¥ç¾¤èŠ
 		if (!((m_IP.CompareNoCase(groupIP) == 0) && (m_Port == groupPort)))
 		{
 			CClientSocket *pClient = new CClientSocket();
 			if (!pClient)
 			{
-				AfxMessageBox(_T("ÄÚ´æ²»×ã£¡"));
+				AfxMessageBox(_T("å†…å­˜ä¸è¶³ï¼"));
 				return false;
 			}
 			if (!pClient->Create())
 			{
-				AfxMessageBox(_T("´´½¨Ì×½Ó×ÖÊ§°Ü£¡"));
+				AfxMessageBox(_T("åˆ›å»ºå¥—æ¥å­—å¤±è´¥ï¼"));
 				return false;
 			}
 			if (!pClient->Connect(theApp.groupIP.GetBuffer(0), theApp.groupPort))
 			{
-				AfxMessageBox(_T("Á¬½ÓÈºÁÄÊ§°Ü£¡"));
+				AfxMessageBox(_T("è¿æ¥ç¾¤èŠå¤±è´¥ï¼"));
 				return false;
 			}
 			MSGHEAD msg;
@@ -166,16 +166,16 @@ BOOL CDecideApp::InitInstance()
 	}
 	else if (nResponse == IDCANCEL)
 	{
-		// TODO: ÔÚ´Ë·ÅÖÃ´¦ÀíºÎÊ±ÓÃ
-		//  ¡°È¡Ïû¡±À´¹Ø±Õ¶Ô»°¿òµÄ´úÂë
+		// TODO: åœ¨æ­¤æ”¾ç½®å¤„ç†ä½•æ—¶ç”¨
+		//  â€œå–æ¶ˆâ€æ¥å…³é—­å¯¹è¯æ¡†çš„ä»£ç 
 	}
 	else if (nResponse == -1)
 	{
-		TRACE(traceAppMsg, 0, "¾¯¸æ: ¶Ô»°¿ò´´½¨Ê§°Ü£¬Ó¦ÓÃ³ÌĞò½«ÒâÍâÖÕÖ¹¡£\n");
-		TRACE(traceAppMsg, 0, "¾¯¸æ: Èç¹ûÄúÔÚ¶Ô»°¿òÉÏÊ¹ÓÃ MFC ¿Ø¼ş£¬ÔòÎŞ·¨ #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS¡£\n");
+		TRACE(traceAppMsg, 0, "è­¦å‘Š: å¯¹è¯æ¡†åˆ›å»ºå¤±è´¥ï¼Œåº”ç”¨ç¨‹åºå°†æ„å¤–ç»ˆæ­¢ã€‚\n");
+		TRACE(traceAppMsg, 0, "è­¦å‘Š: å¦‚æœæ‚¨åœ¨å¯¹è¯æ¡†ä¸Šä½¿ç”¨ MFC æ§ä»¶ï¼Œåˆ™æ— æ³• #define _AFX_NO_MFC_CONTROLS_IN_DIALOGSã€‚\n");
 	}
 
-	// É¾³ıÉÏÃæ´´½¨µÄ shell ¹ÜÀíÆ÷¡£
+	// åˆ é™¤ä¸Šé¢åˆ›å»ºçš„ shell ç®¡ç†å™¨ã€‚
 	if (pShellManager != NULL)
 	{
 		delete pShellManager;
@@ -185,8 +185,8 @@ BOOL CDecideApp::InitInstance()
 	ControlBarCleanUp();
 #endif
 
-	// ÓÉÓÚ¶Ô»°¿òÒÑ¹Ø±Õ£¬ËùÒÔ½«·µ»Ø FALSE ÒÔ±ãÍË³öÓ¦ÓÃ³ÌĞò£¬
-	//  ¶ø²»ÊÇÆô¶¯Ó¦ÓÃ³ÌĞòµÄÏûÏ¢±Ã¡£
+	// ç”±äºå¯¹è¯æ¡†å·²å…³é—­ï¼Œæ‰€ä»¥å°†è¿”å› FALSE ä»¥ä¾¿é€€å‡ºåº”ç”¨ç¨‹åºï¼Œ
+	//  è€Œä¸æ˜¯å¯åŠ¨åº”ç”¨ç¨‹åºçš„æ¶ˆæ¯æ³µã€‚
 	return FALSE;
 }
 
@@ -268,17 +268,17 @@ void CDecideApp::setVersion(int version) {
 
 void VersionCompare(int receive_version, CClientSocket *socket)
 {
-	//ÊÕµ½°æ±¾ºÅÏàÍ¬
+	//æ”¶åˆ°ç‰ˆæœ¬å·ç›¸åŒ
 	if (theApp.version == receive_version)
 	{
 		return;
 	}
-	//ÊÕµ½°æ±¾ºÅĞ¡ÓÚ½ÓÊÕµÄ£¬Ïò¶Ô·½ÇëÇólist
+	//æ”¶åˆ°ç‰ˆæœ¬å·å°äºæ¥æ”¶çš„ï¼Œå‘å¯¹æ–¹è¯·æ±‚list
 	else if (theApp.version < receive_version)
 	{
 		MSGHEAD msg;
 		msg.type = MSG_REQUEST;
-		msg.length = 0;	//²»´æÔÚºóÃæµÄÏûÏ¢
+		msg.length = 0;	//ä¸å­˜åœ¨åé¢çš„æ¶ˆæ¯
 
 		socket->SendMSG(NULL, &msg);
 	}
