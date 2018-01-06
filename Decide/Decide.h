@@ -10,6 +10,7 @@
 
 #include "resource.h"		// Ö÷·ûºÅ
 #include "ServerSocket.h"
+#include "ClientSocket.h"
 #include "MSG.h"
 #include <vector>
 using namespace std;
@@ -43,6 +44,9 @@ public:
 	BOOL WChar2MByte(LPCWSTR srcBuff, LPSTR destBuff, int nlen);
 	static UINT gossip(LPVOID lpParam);
 	char* prepareMsg(int type);
+public:
+	void setVersion(int version);
+	void VersionCompare(int receive_version, CClientSocket *socket);
 };
 
 extern CDecideApp theApp;
