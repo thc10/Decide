@@ -45,10 +45,7 @@
     <ClInclude Include="MSG.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MessageHandle.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="cJSON.h">
+    <ClInclude Include="VoteDlg.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -71,10 +68,7 @@
     <ClCompile Include="ClientSocket.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="MessageHandle.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="cJSON.c">
+    <ClCompile Include="VoteDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
