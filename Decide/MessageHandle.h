@@ -3,4 +3,5 @@
 void HandleLoginMsg(char *pMsg);
 void HandleVersionMsg(char *pMsg);
 void HandleListMsg(char *pMsg);
-void HandleRequstMsg(CClientSocket *socket);
+void HandleRequstMsg(char *pMsg);
+void HandleVoteMsg(char *pMsg);

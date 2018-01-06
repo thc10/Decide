@@ -25,6 +25,8 @@ END_MESSAGE_MAP()
 // CDecideApp 构造
 
 CDecideApp::CDecideApp()
+	: m_IP(_T("192.168.11.1"))
+	, m_Port(6666)
 {
 	// 支持重新启动管理器
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_RESTART;
@@ -83,7 +85,7 @@ BOOL CDecideApp::InitInstance()
 	m_Socket = new CServerSocket();
 	if (!m_Socket)
 	{
-		AfxMessageBox(_T("动态创建服务器套接字出错！"));
+		AfxMessageBox(_T("动态创建服务器套接字出错!"));
 		return false;
 	}
 	CLinkDlg Linkdlg;
@@ -93,13 +95,13 @@ BOOL CDecideApp::InitInstance()
 		// 当用户输入IP和端口信息后，创建本机指定端口的服务器套接字
 		if (!m_Socket->Create(theApp.m_Port))
 		{
-			AfxMessageBox(_T("创建套接字错误！"));
+			AfxMessageBox(_T("创建套接字错误!"));
 			m_Socket->Close();
 			return false;
 		}
 		if (!m_Socket->Listen())
 		{
-			AfxMessageBox(_T("监听失败！"));
+			AfxMessageBox(_T("监听失败!"));
 			m_Socket->Close();
 			return false;
 		}
@@ -109,17 +111,17 @@ BOOL CDecideApp::InitInstance()
 			CClientSocket *pClient = new CClientSocket();
 			if (!pClient)
 			{
-				AfxMessageBox(_T("内存不足！"));
+				AfxMessageBox(_T("内存不足!"));
 				return false;
 			}
 			if (!pClient->Create())
 			{
-				AfxMessageBox(_T("创建套接字失败！"));
+				AfxMessageBox(_T("创建套接字失败!"));
 				return false;
 			}
 			if (!pClient->Connect(theApp.groupIP.GetBuffer(0), theApp.groupPort))
 			{
-				AfxMessageBox(_T("连接群聊失败！"));
+				AfxMessageBox(_T("连接群聊失败!"));
 				return false;
 			}
 			MSGHEAD msg;
@@ -250,15 +252,28 @@ char* CDecideApp::prepareMsg(int type) {
 	if (type == MSG_VERSION) {
 		int num = IPList.size();
 		int i = 0;
+		_bstr_t b(m_IP);
+		char* ip = b;
 		cJSON *root = cJSON_CreateObject();
 		cJSON_AddNumberToObject(root, "version", version);
-		return cJSON_PrintUnformatted(root);
+		cJSON_AddStringToObject(root, "ip", ip);
+		cJSON_AddNumberToObject(root, "port", m_Port);
+		char *pBuf = cJSON_PrintUnformatted(root);
+		cJSON_Delete(root);
+		return pBuf;
+	}
+	else if (type == MSG_STARTVOTE) {
+		cJSON *root = cJSON_CreateObject();
+		cJSON_AddStringToObject(root, "question", VoteQue.question);
+		cJSON_AddStringToObject(root, "answer1", VoteQue.answer1);
+		cJSON_AddStringToObject(root, "answer2", VoteQue.answer2);
+		char *pBuf = cJSON_PrintUnformatted(root);
+		cJSON_Delete(root);
+		type = MSG_VOTE;
+		return pBuf;
 	}
 	else if (type == MSG_VOTE) {
 
-	}
-	else {
-		return NULL;
 	}
 }
 
@@ -266,7 +281,21 @@ void CDecideApp::setVersion(int version) {
 	this->version = version;
 }
 
-void VersionCompare(int receive_version, CClientSocket *socket)
+void CDecideApp::setType(int type) {
+	this->type = type;
+}
+
+void CDecideApp::setVoteQue(LCHVOTE Que) {
+	strcpy_s(this->VoteQue.question, Que.question);
+	strcpy_s(this->VoteQue.answer1, Que.answer1);
+	strcpy_s(this->VoteQue.answer2, Que.answer2);
+}
+
+void CDecideApp::setChoice(CHOICE choice) {
+	
+}
+
+void CDecideApp::VersionCompare(int receive_version, char *ip, int port)
 {
 	//收到版本号相同
 	if (theApp.version == receive_version)
@@ -276,50 +305,73 @@ void VersionCompare(int receive_version, CClientSocket *socket)
 	//收到版本号小于接收的，向对方请求list
 	else if (theApp.version < receive_version)
 	{
+		cJSON *root = cJSON_CreateObject();
+		_bstr_t b(m_IP);
+		char* ip = b;
+		cJSON_AddStringToObject(root, "ip", ip);
+		cJSON_AddNumberToObject(root, "port", m_Port);
+		char* pBuf = cJSON_PrintUnformatted(root);
 		MSGHEAD msg;
 		msg.type = MSG_REQUEST;
-		msg.length = 0;	//不存在后面的消息
+		msg.length = strlen(pBuf);
 
-		socket->SendMSG(NULL, &msg);
+		CClientSocket *pClient = new CClientSocket();
+		if (pClient && pClient->Create() && pClient->Connect(CString(ip).GetBuffer(0), port)) {
+			pClient->SendMSG(pBuf, &msg);
+			pClient->Close();
+		}
+		delete pClient;
+		cJSON_Delete(root);
+		free(pBuf);
 	}
 	else
 	{
-		MSGHEAD msg;
-
-		cJSON *json_root = cJSON_CreateObject();
-		if (!json_root)
-		{
-			AfxMessageBox(_T("Memory malloc error"));
-			return;
-		}
-
-		cJSON *root = cJSON_CreateArray();
-		if (!root)
-		{
-			AfxMessageBox(_T("Memory malloc error"));
-			return;
-		}
-
-		cJSON_AddNumberToObject(json_root, "version", theApp.version);
-		int num = theApp.IPList.size();
-
-		for (int i = 0; i < num; i++)
-		{
-			cJSON *temp = cJSON_CreateObject();
-			cJSON_AddStringToObject(temp, "ip", theApp.IPList[i].ip);
-			cJSON_AddNumberToObject(temp, "port", theApp.IPList[i].port);
-			cJSON_AddItemToArray(root, temp);
-		}
-		cJSON_AddItemToObject(json_root, "data", root);
-
-		char *pBuff = cJSON_PrintUnformatted(json_root);
-
-		msg.type = MSG_LIST;
-		msg.length = strlen(pBuff);
-
-		socket->SendMSG(pBuff, &msg);
-
-		cJSON_Delete(root);
-		free(pBuff);
+		SendListMsg(ip, port);
 	}
 }
+
+void CDecideApp::SendListMsg(char* ip, int port) {
+	MSGHEAD msg;
+
+	cJSON *json_root = cJSON_CreateObject();
+	if (!json_root)
+	{
+		AfxMessageBox(_T("Memory malloc error"));
+		return;
+	}
+
+	cJSON *root = cJSON_CreateArray();
+	if (!root)
+	{
+		AfxMessageBox(_T("Memory malloc error"));
+		return;
+	}
+
+	cJSON_AddNumberToObject(json_root, "version", theApp.version);
+	int num = theApp.IPList.size();
+
+	for (int i = 0; i < num; i++)
+	{
+		cJSON *temp = cJSON_CreateObject();
+		cJSON_AddStringToObject(temp, "ip", theApp.IPList[i].ip);
+		cJSON_AddNumberToObject(temp, "port", theApp.IPList[i].port);
+		cJSON_AddItemToArray(root, temp);
+	}
+	cJSON_AddItemToObject(json_root, "data", root);
+
+	char *pBuff = cJSON_PrintUnformatted(json_root);
+
+	msg.type = MSG_LIST;
+	msg.length = strlen(pBuff);
+
+	CClientSocket *pClient = new CClientSocket();
+	if (pClient && pClient->Create() && pClient->Connect(CString(ip).GetBuffer(0), port)) {
+		pClient->SendMSG(pBuff, &msg);
+		pClient->Close();
+	}
+
+	cJSON_Delete(root);
+	free(pBuff);
+}
+
+
