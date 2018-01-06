@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "Decide.h"
+#include "MessageHandle.h"
 #include "ClientSocket.h"
 
 
@@ -39,23 +40,23 @@ void CClientSocket::OnReceive(int nErrorCode)
 	Receive(pMsg, sizeof(msg));
 	msg.type = ((MSGHEAD*)pMsg)->type;
 	msg.length = ((MSGHEAD*)pMsg)->length;
-	msg.version = ((MSGHEAD*)pMsg)->version;
 	delete pMsg;
 	pMsg = new char[msg.length];
-
+	if (Receive(pMsg, msg.length) != msg.length) {
+		AfxMessageBox(_T("收到数据有误"));
+		return;
+	}
 	switch (msg.type)
 	{
-		case MSG_INFO:		//新用户加入
+		case MSG_LOGIN:		//新用户加入
 		{
-			delete pMsg;
-			pMsg = new char[msg.length];
-			Receive(pMsg, msg.length);
+			HandleLoginMsg(pMsg);
+			break;
 		}
 		case MSG_VOTE:		//收到的投票结果
 		{
-			delete pMsg;
-			pMsg = new char[msg.length];
-			Receive(pMsg, msg.length);
+			HandleLoginMsg(pMsg);
+			break;
 		}
 		case MSG_LIST:		//更新本地用户信息表
 		{
@@ -65,7 +66,8 @@ void CClientSocket::OnReceive(int nErrorCode)
 		}
 		case MSG_VERSION:	//版本信息维护
 		{
-
+			HandleVersionMsg(pMsg);
+			break;
 		}
 	}
 	CSocket::OnReceive(nErrorCode);

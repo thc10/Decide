@@ -8,6 +8,8 @@
 #include "LinkDlg.h"
 #include "ClientSocket.h"
 #include "ServerSocket.h"
+#include <time.h>
+using namespace std;
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -124,13 +126,15 @@ BOOL CDecideApp::InitInstance()
 			IPINFO localip;
 			msg.type = MSG_LOGIN;
 			msg.length = sizeof(localip);
-			msg.version = -1;
 			theApp.WChar2MByte(m_IP, localip.ip, sizeof(localip));
 			localip.port = m_Port;
 			pClient->SendMSG((char*)&localip, &msg);
+			Sleep(3000);
 			pClient->Close();
 			delete pClient;
 		}
+		type = MSG_VERSION;
+		AfxBeginThread(gossip, this);
 		CDecideDlg dlg;
 		m_pMainWnd = &dlg;
 		nResponse = dlg.DoModal();
@@ -191,5 +195,44 @@ BOOL CDecideApp::WChar2MByte(LPCWSTR srcBuff, LPSTR destBuff, int nlen)
 	WideCharToMultiByte(CP_OEMCP, 0, srcBuff, -1, destBuff, nlen, 0, FALSE);
 
 	return TRUE;
+}
+
+UINT CDecideApp::gossip(LPVOID lpParam) {
+	int num = 0, select = 0;
+	while (1) {
+		num = theApp.IPList.size();
+		if (num == 0) {
+			Sleep(1000);
+			continue;
+		}
+		srand((unsigned)time(NULL));
+		select = rand() % num;
+		CClientSocket *pClient = new CClientSocket();
+		if (!pClient || !pClient->Create() || !pClient->Connect((LPWSTR)theApp.IPList[select - 1].ip, (UINT)theApp.IPList[select - 1].port))
+		{
+			continue;
+		}
+		MSGHEAD msg;
+		char* msg_toBsend = theApp.prepareMsg(theApp.type);
+		msg.type = theApp.type;
+		msg.length = sizeof(msg_toBsend);
+		pClient->SendMSG((char*)&msg_toBsend, &msg);
+		AfxMessageBox(_T("send Msg"));
+		Sleep(2000);
+		pClient->Close();
+		delete pClient;
+	}
+}
+
+char* CDecideApp::prepareMsg(int type) {
+	if (type == MSG_VERSION) {
+		int num = IPList.size();
+	}
+	else if (type == MSG_VOTE) {
+
+	}
+	else {
+		return "";
+	}
 }
 

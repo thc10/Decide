@@ -190,6 +190,7 @@
     <ClInclude Include="Decide.h" />
     <ClInclude Include="DecideDlg.h" />
     <ClInclude Include="LinkDlg.h" />
+    <ClInclude Include="MessageHandle.h" />
     <ClInclude Include="MSG.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ServerSocket.h" />
@@ -201,6 +202,7 @@
     <ClCompile Include="Decide.cpp" />
     <ClCompile Include="DecideDlg.cpp" />
     <ClCompile Include="LinkDlg.cpp" />
+    <ClCompile Include="MessageHandle.cpp" />
     <ClCompile Include="ServerSocket.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

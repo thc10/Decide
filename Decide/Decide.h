@@ -33,12 +33,16 @@ public:
 	CString groupIP;	//群聊房间IP
 	UINT groupPort;		//群聊房间端口
 	vector<IPINFO> IPList;	//IP容器
+	int type;			//gossip同步的类型
+	int version;		//版本号
 // 实现
 
 	CServerSocket* GetServerSocket() const;
 	DECLARE_MESSAGE_MAP()
 	virtual int ExitInstance();
 	BOOL WChar2MByte(LPCWSTR srcBuff, LPSTR destBuff, int nlen);
+	static UINT gossip(LPVOID lpParam);
+	char* prepareMsg(int type);
 };
 
 extern CDecideApp theApp;

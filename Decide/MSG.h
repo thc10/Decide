@@ -1,14 +1,13 @@
 #pragma once
 const int MSG_LOGIN = 0;	//加入群聊
-const int MSG_INFO = 1;		//本机IP以及侦听端口信息
-const int MSG_VOTE = 2;		//投票信息
+const int MSG_VERSION = 1;	//版本信息
+const int REQUEST = 2;		//本机IP以及侦听端口信息
 const int MSG_LIST = 3;		//用户列表
-const int MSG_VERSION = 4;	//版本信息
+const int MSG_VOTE = 4;		//投票信息
 
 							//消息头
 typedef struct msg {
 	int type;
-	int version;
 	int length;
 }MSGHEAD;
 
