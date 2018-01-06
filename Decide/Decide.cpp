@@ -6,7 +6,6 @@
 #include "Decide.h"
 #include "DecideDlg.h"
 #include "LinkDlg.h"
-#include "ClientSocket.h"
 #include "ServerSocket.h"
 #include "cJSON.h"
 #include <time.h>
@@ -125,6 +124,11 @@ BOOL CDecideApp::InitInstance()
 			}
 			MSGHEAD msg;
 			cJSON *root = cJSON_CreateObject();
+			if (!root)
+			{
+				AfxMessageBox(_T("Memory malloc error"));
+				return false;
+			}
 			_bstr_t b(m_IP);
 			char* ip = b;
 			cJSON_AddStringToObject(root, "ip", ip);
@@ -262,4 +266,60 @@ void CDecideApp::setVersion(int version) {
 	this->version = version;
 }
 
+void VersionCompare(int receive_version, CClientSocket *socket)
+{
+	//收到版本号相同
+	if (theApp.version == receive_version)
+	{
+		return;
+	}
+	//收到版本号小于接收的，向对方请求list
+	else if (theApp.version < receive_version)
+	{
+		MSGHEAD msg;
+		msg.type = MSG_REQUEST;
+		msg.length = 0;	//不存在后面的消息
 
+		socket->SendMSG(NULL, &msg);
+	}
+	else
+	{
+		MSGHEAD msg;
+
+		cJSON *json_root = cJSON_CreateObject();
+		if (!json_root)
+		{
+			AfxMessageBox(_T("Memory malloc error"));
+			return;
+		}
+
+		cJSON *root = cJSON_CreateArray();
+		if (!root)
+		{
+			AfxMessageBox(_T("Memory malloc error"));
+			return;
+		}
+
+		cJSON_AddNumberToObject(json_root, "version", theApp.version);
+		int num = theApp.IPList.size();
+
+		for (int i = 0; i < num; i++)
+		{
+			cJSON *temp = cJSON_CreateObject();
+			cJSON_AddStringToObject(temp, "ip", theApp.IPList[i].ip);
+			cJSON_AddNumberToObject(temp, "port", theApp.IPList[i].port);
+			cJSON_AddItemToArray(root, temp);
+		}
+		cJSON_AddItemToObject(json_root, "data", root);
+
+		char *pBuff = cJSON_PrintUnformatted(json_root);
+
+		msg.type = MSG_LIST;
+		msg.length = strlen(pBuff);
+
+		socket->SendMSG(pBuff, &msg);
+
+		cJSON_Delete(root);
+		free(pBuff);
+	}
+}
