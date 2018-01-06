@@ -67,10 +67,102 @@ void HandleVersionMsg(char *pMsg) {
 	cJSON_Delete(root);
 }
 
-void HandleRequstMsg(char *pMsg) {
-	AfxMessageBox(_T("recvie requst msgs"));
+void HandleListMsg(char *pMsg)
+{
+	cJSON *json_root = cJSON_Parse(pMsg);
+	if (!json_root)
+	{
+		AfxMessageBox(_T("Message format error"));
+		return;
+	}
+
+	cJSON *temp = cJSON_GetObjectItem(json_root, "version");
+	if (!temp)
+	{
+		AfxMessageBox(_T("param error"));
+		cJSON_Delete(json_root);
+		return;
+	}
+
+	theApp.version = temp->valueint;
+	temp = cJSON_GetObjectItem(json_root, "data");
+	if (!temp)
+	{
+		AfxMessageBox(_T("param error"));
+		return;
+	}
+
+	theApp.IPList.clear();	//清空IP列表
+	//重新写IP列表
+	int num = cJSON_GetArraySize(temp);
+	cJSON *Node = NULL;
+	cJSON *NodeIP = NULL;
+	cJSON *NodePort = NULL;
+	for (int i = 0; i < num; i++)
+	{
+		Node = cJSON_GetArrayItem(temp, i);
+		if (!Node)
+			break;
+		NodeIP = cJSON_GetObjectItem(Node, "ip");
+		if (!NodeIP)
+		{
+			AfxMessageBox(_T("param error"));
+			break;
+		}
+		NodePort = cJSON_GetObjectItem(Node, "port");
+		if (!NodePort)
+		{
+			AfxMessageBox(_T("param error"));
+			break;
+		}
+
+		IPINFO IPNode;
+		strncpy(IPNode.ip, NodeIP->valuestring, 20);
+		IPNode.port = NodePort->valueint;
+
+		theApp.IPList.push_back(IPNode);
+	}
+
+	cJSON_Delete(json_root);
 }
 
-void HandleListMsg(char *pMsg) {
-	AfxMessageBox(_T("recvie list msgs"));
+void HandleRequstMsg(CClientSocket *socket)
+{
+	MSGHEAD msg;
+
+	cJSON *json_root = cJSON_CreateObject();
+	if (!json_root)
+	{
+		AfxMessageBox(_T("Memory malloc error"));
+		return;
+	}
+
+	cJSON *root = cJSON_CreateArray();
+	if (!root)
+	{
+		AfxMessageBox(_T("Memory malloc error"));
+		return;
+	}
+
+	cJSON_AddNumberToObject(json_root, "version", theApp.version);
+	int num = theApp.IPList.size();
+
+	for (int i = 0; i < num; i++)
+	{
+		cJSON *temp = cJSON_CreateObject();
+		cJSON_AddStringToObject(temp, "ip", theApp.IPList[i].ip);
+		cJSON_AddNumberToObject(temp, "port", theApp.IPList[i].port);
+		cJSON_AddItemToArray(root, temp);
+	}
+	cJSON_AddItemToObject(json_root, "data", root);
+
+	char *pBuff = cJSON_PrintUnformatted(json_root);
+
+	msg.type = MSG_LIST;
+	msg.length = strlen(pBuff);
+
+	socket->SendMSG(pBuff, &msg);
+
+	cJSON_Delete(root);
+	free(pBuff);
 }

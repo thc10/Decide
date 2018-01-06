@@ -41,10 +41,14 @@ void CClientSocket::OnReceive(int nErrorCode)
 	msg.type = ((MSGHEAD*)pMsg)->type;
 	msg.length = ((MSGHEAD*)pMsg)->length;
 	delete pMsg;
-	pMsg = new char[msg.length];
-	if (Receive(pMsg, msg.length) != msg.length) {
-		//AfxMessageBox(_T("收到数据有误"));
-		return;
+	if (msg.length != 0)	//MSG_REQUEST没有消息体
+	{
+		pMsg = new char[msg.length];
+		if (Receive(pMsg, msg.length) != msg.length)
+		{
+			//AfxMessageBox(_T("收到数据有误"));
+			return;
+		}
 	}
 	switch (msg.type)
 	{
@@ -68,6 +72,10 @@ void CClientSocket::OnReceive(int nErrorCode)
 		{
 			HandleVersionMsg(pMsg);
 			break;
+		}
+		case MSG_REQUEST:	//请求用户消息列表
+		{
+			HandleRequstMsg(this);
 		}
 	}
 	CSocket::OnReceive(nErrorCode);
