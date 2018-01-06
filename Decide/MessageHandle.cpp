@@ -39,24 +39,32 @@ void HandleLoginMsg(char *pMsg)
 
 	cJSON_Delete(root);
 
-	AfxMessageBox(_T("新的用户加入"));
+	//AfxMessageBox(_T("新的用户加入"));
+	theApp.version++;
 }
 
 void HandleVersionMsg(char *pMsg) {
 	cJSON *root = NULL;
-
-	AfxMessageBox(_T("recieve version MSg"));
-	/*
+	cJSON *temp = NULL;
+	
 	root = cJSON_Parse(pMsg);
-	if (root)
+	if (!root)
 	{
 		AfxMessageBox(_T("消息格式错误"));
 		return;
 	}
 
-	int version = cJSON_GetObjectItem(root, "version")->valueint;
-
-	cJSON_Delete(root);*/
+	temp = cJSON_GetObjectItem(root, "version");
+	if (!temp)
+	{
+		AfxMessageBox(_T("param error"));
+		return;
+	}
+	int version = temp->valueint;
+	CString str;
+	str.Format(_T("version is %d。"), theApp.version);
+	AfxMessageBox(str);
+	cJSON_Delete(root);
 }
 
 void HandleRequstMsg(char *pMsg) {

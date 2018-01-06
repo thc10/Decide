@@ -142,7 +142,8 @@ BOOL CDecideApp::InitInstance()
 			delete pClient;
 		}
 		type = MSG_VERSION;
-		//AfxBeginThread(gossip, this);
+		version = -1;
+		AfxBeginThread(gossip, this);
 		CDecideDlg dlg;
 		m_pMainWnd = &dlg;
 		nResponse = dlg.DoModal();
@@ -218,17 +219,15 @@ UINT CDecideApp::gossip(LPVOID lpParam) {
 		char *ip = theApp.IPList[select].ip;
 		int port = theApp.IPList[select].port;
 		CClientSocket *pClient = new CClientSocket();
-		if (!pClient)
-			continue;
-		if (!pClient->Create())
-			continue;
-		if (!pClient->Connect((LPWSTR)theApp.IPList[select].ip, (UINT)theApp.IPList[select].port))
+		if (!pClient || !pClient->Create() || !pClient->Connect(CString(theApp.IPList[select].ip).GetBuffer(0), (UINT)theApp.IPList[select].port))
 			continue;
 		MSGHEAD msg;
 		char* msg_toBsend = theApp.prepareMsg(theApp.type);
+		if (!msg_toBsend)
+			continue;
 		msg.type = theApp.type;
-		msg.length = sizeof(msg_toBsend);
-		pClient->SendMSG((char*)&msg_toBsend, &msg);
+		msg.length = strlen(msg_toBsend);
+		pClient->SendMSG(msg_toBsend, &msg);
 		Sleep(2000);
 		pClient->Close();
 		delete pClient;
@@ -238,13 +237,17 @@ UINT CDecideApp::gossip(LPVOID lpParam) {
 char* CDecideApp::prepareMsg(int type) {
 	if (type == MSG_VERSION) {
 		int num = IPList.size();
-		return "msg";
+		int i = 0;
+		cJSON *root = cJSON_CreateObject();
+		cJSON_AddNumberToObject(root, "version", version);
+		return cJSON_PrintUnformatted(root);
 	}
 	else if (type == MSG_VOTE) {
 
 	}
 	else {
-		return "";
+		return NULL;
 	}
 }
+
 
