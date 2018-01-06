@@ -31,4 +31,15 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+
+
+public:
+	// 需要投票的问题
+	CString m_Question;
+	// 选项1
+	CString m_Answer1;
+	// 选项2
+	CString m_Answer2;
+	afx_msg void OnBnClickedOk();  //按下发起投票键
+	BOOL WChar2MByte(LPCWSTR srcBuff, LPSTR destBuff, int nlen);  
 };

@@ -23,7 +23,7 @@ CServerSocket::~CServerSocket()
 void CServerSocket::OnAccept(int nErrorCode)
 {
 	// TODO: 在此添加专用代码和/或调用基类
-	CClientSocket *Client = new CClientSocket();
+	CClientSocket *Client(0);
 	Accept(*Client);
 	CSocket::OnAccept(nErrorCode);
 }

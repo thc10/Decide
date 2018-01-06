@@ -3,7 +3,6 @@
 
 #include "stdafx.h"
 #include "Decide.h"
-#include "MessageHandle.h"
 #include "ClientSocket.h"
 
 
@@ -40,34 +39,36 @@ void CClientSocket::OnReceive(int nErrorCode)
 	Receive(pMsg, sizeof(msg));
 	msg.type = ((MSGHEAD*)pMsg)->type;
 	msg.length = ((MSGHEAD*)pMsg)->length;
+	msg.version = ((MSGHEAD*)pMsg)->version;
 	delete pMsg;
 	pMsg = new char[msg.length];
-	if (Receive(pMsg, msg.length) != msg.length) {
-		//AfxMessageBox(_T("收到数据有误"));
-		return;
-	}
+
 	switch (msg.type)
 	{
-		case MSG_LOGIN:		//新用户加入
+		case MSG_INFO:		//新用户加入
 		{
-			HandleLoginMsg(pMsg);
-			break;
+			delete pMsg;
+			pMsg = new char[msg.length];
+			Receive(pMsg, msg.length);
+
 		}
 		case MSG_VOTE:		//收到的投票结果
 		{
-			HandleLoginMsg(pMsg);
-			break;
+			delete pMsg;
+			pMsg = new char[msg.length];
+			Receive(pMsg, msg.length);
+
 		}
 		case MSG_LIST:		//更新本地用户信息表
 		{
 			delete pMsg;
 			pMsg = new char[msg.length];
 			Receive(pMsg, msg.length);
+
 		}
 		case MSG_VERSION:	//版本信息维护
 		{
-			HandleVersionMsg(pMsg);
-			break;
+
 		}
 	}
 	CSocket::OnReceive(nErrorCode);
@@ -77,7 +78,7 @@ void CClientSocket::OnReceive(int nErrorCode)
 BOOL CClientSocket::SendMSG(LPSTR pBuff, MSGHEAD* msg)
 {
 	//生成协议头
-	int i = Send(msg, sizeof(MSGHEAD));
+	int i = Send(msg, sizeof(MSG));
 	if (i == SOCKET_ERROR)
 	{
 		AfxMessageBox(_T("发送错误！"));
@@ -92,6 +93,7 @@ BOOL CClientSocket::SendMSG(LPSTR pBuff, MSGHEAD* msg)
 			return FALSE;
 		};
 	}
+
 	return  TRUE;
 }
 
