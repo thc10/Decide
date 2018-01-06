@@ -129,11 +129,15 @@ BOOL CDecideApp::InitInstance()
 			char* ip = b;
 			cJSON_AddStringToObject(root, "ip", ip);
 			cJSON_AddNumberToObject(root, "port", m_Port);
-			char *pBuf = cJSON_PrintBuffered(root, 0, 0);
+			char *pBuf = cJSON_PrintUnformatted(root);
 
 			msg.type = MSG_LOGIN;
 			msg.length = strlen(pBuf);
 			pClient->SendMSG(pBuf, &msg);
+
+			cJSON_Delete(root);
+			free(pBuf);
+
 			pClient->Close();
 			delete pClient;
 		}
