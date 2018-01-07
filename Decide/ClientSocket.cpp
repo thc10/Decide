@@ -44,6 +44,7 @@ void CClientSocket::OnReceive(int nErrorCode)
 	if (msg.length != 0)	//MSG_REQUEST没有消息体
 	{
 		pMsg = new char[msg.length];
+		memset(pMsg, 0, msg.length);
 		if (Receive(pMsg, msg.length) != msg.length)
 		{
 			//AfxMessageBox(_T("收到数据有误"));
@@ -75,6 +76,12 @@ void CClientSocket::OnReceive(int nErrorCode)
 		case MSG_REQUEST:	//请求用户消息列表
 		{
 			HandleRequstMsg(pMsg);
+			break;
+		}
+		case MSG_STARTVOTE:  //发起投票
+		{
+			HandleStartVoteMsg(pMsg);
+			break;
 		}
 	}
 	CSocket::OnReceive(nErrorCode);

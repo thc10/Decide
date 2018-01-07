@@ -71,6 +71,7 @@ BEGIN_MESSAGE_MAP(CDecideDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDOK, &CDecideDlg::OnBnClickedOk)
 END_MESSAGE_MAP()
 
 
@@ -169,30 +170,23 @@ void CDecideDlg::OnBnClickedOk()
 	UpdateData();  //用来刷新数据
 	if (m_Question.IsEmpty())
 	{
-		AfxMessageBox(_T("问题不能为空！"));
+		AfxMessageBox(_T("Empty Question!"));
 		return;
 	}
 	if (m_Answer1.IsEmpty() || m_Answer2.IsEmpty())
 	{
-		AfxMessageBox(_T("选项不能为空！"));
+		AfxMessageBox(_T("Empty Option!"));
 		return;
 	}
 
-	/*
-	发送：
-	key:question value:m_Question type:发起投票
-	key:answer1 value:m_Answer1 type:发起投票
-	key:answer2 value:m_Answer2 type:发起投票
-	*/
-
 	theApp.setType(MSG_STARTVOTE);
 
-	_bstr_t b(m_Question);
-	char* question = b;
+	_bstr_t a(m_Question);
+	char* question = a;
 	_bstr_t b(m_Answer1);
 	char* answer1 = b;
-	_bstr_t b(m_Answer2);
-	char* answer2 = b;
+	_bstr_t c(m_Answer2);
+	char* answer2 = c;
 
 	LCHVOTE que;
 	strcpy_s(que.question, question);
@@ -200,6 +194,7 @@ void CDecideDlg::OnBnClickedOk()
 	strcpy_s(que.answer2, answer2);
 
 	theApp.setVoteQue(que);
+	theApp.SendVote();
 
-	CDialogEx::OnOK();
+	//CDialogEx::OnOK();
 }

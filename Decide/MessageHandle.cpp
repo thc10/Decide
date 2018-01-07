@@ -3,6 +3,7 @@
 #include "Decide.h"
 #include "MessageHandle.h"
 #include "MSG.h"
+#include "VoteDlg.h"
 
 void HandleLoginMsg(char *pMsg)
 {
@@ -174,5 +175,78 @@ void HandleRequstMsg(char *pMsg)
 }
 
 void HandleVoteMsg(char *pMsg) {
+	if (theApp.is_start == 0)
+		return;
+	cJSON *root = NULL;
+	cJSON *temp = NULL;
+	CHOICE MyChoice;
+
+	root = cJSON_Parse(pMsg);
+	if (!root) {
+		AfxMessageBox(_T("param error"));
+		cJSON_Delete(root);
+		return;
+	}
+	temp = cJSON_GetObjectItem(root, "answer");
+	if (!temp) {
+		AfxMessageBox(_T("param error"));
+		cJSON_Delete(root);
+		return;
+	}
+	MyChoice.answer = temp->valueint;
+	temp = cJSON_GetObjectItem(root, "flag");
+	if (!temp) {
+		AfxMessageBox(_T("param error"));
+		cJSON_Delete(root);
+		return;
+	}
+	MyChoice.flag = temp->valueint;
+	temp = cJSON_GetObjectItem(root, "count");
+	if (!temp) {
+		AfxMessageBox(_T("param error"));
+		cJSON_Delete(root);
+		return;
+	}
+	MyChoice.count = temp->valueint;
+
+	theApp.HandleChoice(MyChoice);
+
+}
+
+void HandleStartVoteMsg(char *pMsg) {
+	cJSON *root = NULL;
+	cJSON *temp = NULL;
+	LCHVOTE vote;
+
+	root = cJSON_Parse(pMsg);
+	if (!root) {
+		AfxMessageBox(_T("param error"));
+		cJSON_Delete(root);
+		return;
+	}
+	temp = cJSON_GetObjectItem(root, "question");
+	if (!temp) {
+		AfxMessageBox(_T("param error"));
+		cJSON_Delete(root);
+		return;
+	}
+	strcpy_s(vote.question, temp->valuestring);
+	temp = cJSON_GetObjectItem(root, "answer1");
+	if (!temp) {
+		AfxMessageBox(_T("param error"));
+		cJSON_Delete(root);
+		return;
+	}
+	strcpy_s(vote.answer1, temp->valuestring);
+	temp = cJSON_GetObjectItem(root, "answer2");
+	if (!temp) {
+		AfxMessageBox(_T("param error"));
+		cJSON_Delete(root);
+		return;
+	}
+	strcpy_s(vote.answer2, temp->valuestring);
 	
+	theApp.setVoteQue(vote);
+	theApp.setIsStart(0);
+	theApp.StartVote();
 }

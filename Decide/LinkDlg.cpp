@@ -13,10 +13,10 @@ IMPLEMENT_DYNAMIC(CLinkDlg, CDialogEx)
 
 CLinkDlg::CLinkDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_LINKDLG, pParent)
-	, localIP(0)
-	, groupIP(0)
-	, localPort(0)
-	, groupPort(0)
+	, localIP(2130706433)
+	, groupIP(2130706433)
+	, localPort(6666)
+	, groupPort(6666)
 {
 
 }

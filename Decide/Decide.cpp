@@ -6,6 +6,7 @@
 #include "Decide.h"
 #include "DecideDlg.h"
 #include "LinkDlg.h"
+#include "VoteDlg.h"
 #include "ServerSocket.h"
 #include "cJSON.h"
 #include <time.h>
@@ -25,8 +26,8 @@ END_MESSAGE_MAP()
 // CDecideApp 构造
 
 CDecideApp::CDecideApp()
-	: m_IP(_T("192.168.11.1"))
-	, m_Port(6666)
+	: is_start(0)
+	, voteend(0)
 {
 	// 支持重新启动管理器
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_RESTART;
@@ -111,17 +112,17 @@ BOOL CDecideApp::InitInstance()
 			CClientSocket *pClient = new CClientSocket();
 			if (!pClient)
 			{
-				AfxMessageBox(_T("内存不足!"));
+				AfxMessageBox(_T("Error: No enough memory to create a Socket!"));
 				return false;
 			}
 			if (!pClient->Create())
 			{
-				AfxMessageBox(_T("创建套接字失败!"));
+				AfxMessageBox(_T("Error: fail to create a ClientSocket!"));
 				return false;
 			}
 			if (!pClient->Connect(theApp.groupIP.GetBuffer(0), theApp.groupPort))
 			{
-				AfxMessageBox(_T("连接群聊失败!"));
+				AfxMessageBox(_T("Error: fail to connect group!"));
 				return false;
 			}
 			MSGHEAD msg;
@@ -159,12 +160,7 @@ BOOL CDecideApp::InitInstance()
 		version = -1;
 		AfxBeginThread(gossip, this);
 		CDecideDlg dlg;
-		m_pMainWnd = &dlg;
 		nResponse = dlg.DoModal();
-		if (nResponse == IDCANCEL)
-		{
-
-		}
 	}
 	else if (nResponse == IDCANCEL)
 	{
@@ -223,6 +219,10 @@ BOOL CDecideApp::WChar2MByte(LPCWSTR srcBuff, LPSTR destBuff, int nlen)
 UINT CDecideApp::gossip(LPVOID lpParam) {
 	int num = 0, select = 0;
 	while (1) {
+		if (theApp.voteend)
+		{
+			continue;
+		}
 		num = theApp.IPList.size();
 		if (num == 0) {
 			Sleep(1000);
@@ -232,6 +232,10 @@ UINT CDecideApp::gossip(LPVOID lpParam) {
 		select = rand() % num;
 		char *ip = theApp.IPList[select].ip;
 		int port = theApp.IPList[select].port;
+		_bstr_t b(theApp.m_IP);
+		char* local = b;
+		if (strcmp(ip, local) == 0 && port == theApp.m_Port)
+			continue;
 		CClientSocket *pClient = new CClientSocket();
 		if (!pClient || !pClient->Create() || !pClient->Connect(CString(theApp.IPList[select].ip).GetBuffer(0), (UINT)theApp.IPList[select].port))
 			continue;
@@ -239,13 +243,22 @@ UINT CDecideApp::gossip(LPVOID lpParam) {
 		char* msg_toBsend = theApp.prepareMsg(theApp.type);
 		if (!msg_toBsend)
 			continue;
-		msg.type = theApp.type;
+		if (theApp.type == MSG_STOP)
+		{
+			msg.type = MSG_VOTE;
+			theApp.setVoteEnd(1);
+		}
+		else
+		{
+			msg.type = theApp.type;
+		}
 		msg.length = strlen(msg_toBsend);
 		pClient->SendMSG(msg_toBsend, &msg);
-		Sleep(2000);
+		Sleep(200);
 		pClient->Close();
 		delete pClient;
 	}
+	return 0;
 }
 
 char* CDecideApp::prepareMsg(int type) {
@@ -262,19 +275,26 @@ char* CDecideApp::prepareMsg(int type) {
 		cJSON_Delete(root);
 		return pBuf;
 	}
-	else if (type == MSG_STARTVOTE) {
+	else if (type == MSG_VOTE) {
 		cJSON *root = cJSON_CreateObject();
-		cJSON_AddStringToObject(root, "question", VoteQue.question);
-		cJSON_AddStringToObject(root, "answer1", VoteQue.answer1);
-		cJSON_AddStringToObject(root, "answer2", VoteQue.answer2);
+		cJSON_AddNumberToObject(root, "answer", MyChoice.answer);
+		cJSON_AddNumberToObject(root, "count", MyChoice.count);
+		cJSON_AddNumberToObject(root, "flag", MyChoice.flag);
 		char *pBuf = cJSON_PrintUnformatted(root);
 		cJSON_Delete(root);
-		type = MSG_VOTE;
 		return pBuf;
 	}
-	else if (type == MSG_VOTE) {
-
+	else if (type == MSG_STOP) {
+		cJSON *root = cJSON_CreateObject();
+		cJSON_AddNumberToObject(root, "answer", MyChoice.answer);
+		cJSON_AddNumberToObject(root, "count", MyChoice.count);
+		cJSON_AddNumberToObject(root, "flag", MyChoice.flag);
+		char *pBuf = cJSON_PrintUnformatted(root);
+		cJSON_Delete(root);
+		return pBuf;
 	}
+	else
+		return "ad";
 }
 
 void CDecideApp::setVersion(int version) {
@@ -285,14 +305,139 @@ void CDecideApp::setType(int type) {
 	this->type = type;
 }
 
+void CDecideApp::setIsStart(int is_start) {
+	this->is_start = is_start;
+}
+
+void CDecideApp::setVoteEnd(int sign)
+{
+	this->voteend = sign;
+}
+
 void CDecideApp::setVoteQue(LCHVOTE Que) {
+	memset(&VoteQue, 0, sizeof(VoteQue));
 	strcpy_s(this->VoteQue.question, Que.question);
 	strcpy_s(this->VoteQue.answer1, Que.answer1);
 	strcpy_s(this->VoteQue.answer2, Que.answer2);
 }
 
 void CDecideApp::setChoice(CHOICE choice) {
-	
+	memset(&MyChoice, 0, sizeof(MyChoice));
+	this->MyChoice.answer = choice.answer;
+	this->MyChoice.count = choice.count;
+	this->MyChoice.flag = choice.flag;
+}
+
+void CDecideApp::setRecord(RECORD record) {
+	memset(&VoteRecord, 0, sizeof(VoteRecord));
+	this->VoteRecord.count1 = record.count1;
+	this->VoteRecord.count2 = record.count2;
+	this->HandleRecord();
+}
+
+void CDecideApp::HandleChoice(CHOICE choice) {
+	int num = IPList.size();
+	if (choice.flag == 1)  //Received 2f+1 same options from other nodes, this is the final result
+	{
+		if (this->MyChoice.flag == 0)  //未被感染
+		{
+			CHOICE rechoice;
+			rechoice.answer = choice.answer;
+			rechoice.flag = choice.flag;
+			rechoice.count = num;
+			setChoice(rechoice);
+			setType(MSG_STOP);
+			setVoteEnd(0);
+			mainDlg.DisplayResult(MyChoice.answer);
+			return;
+		}
+		else  //已经被感染
+		{
+			CHOICE rechoice;
+			rechoice.answer = choice.answer;
+			rechoice.flag = choice.flag;
+			rechoice.count = choice.count - 1;
+			setChoice(rechoice);
+			setType(MSG_STOP);
+			setVoteEnd(0);
+			mainDlg.DisplayResult(MyChoice.answer);
+			return;
+		}
+	}
+	else if (choice.flag == 0)  //说明只是一次普通的选择，不是最终结果
+	{
+		if (MyChoice.flag == 1)
+		{
+			return;
+		}
+		RECORD rerecord;
+		rerecord.count1 = VoteRecord.count1;
+		rerecord.count2 = VoteRecord.count2;
+		if (choice.answer == 1)
+		{
+			rerecord.count1 += 1;
+		}
+		else if (choice.answer == 2)
+		{
+			rerecord.count2 += 1;
+		}
+		else
+		{
+			return;
+		}
+		setRecord(rerecord);
+		setType(MSG_VOTE);
+		return;
+	}	
+}
+
+void CDecideApp::HandleRecord()
+{
+	int num = IPList.size(); 
+	int end = ((num * 2 + 1) % 3) ? ((num * 2 + 1) / 3) : (((num * 2 + 1) / 3) + 1);
+	if (VoteRecord.count1 + VoteRecord.count2 >= end)  //收到的包不少于2f+1
+	{
+		CHOICE choice;
+		if (VoteRecord.count1 >= end)
+		{
+			choice.answer = 1;
+			choice.flag = 1;
+			choice.count = num;
+			setChoice(choice);
+			setType(MSG_STOP);
+			setVoteEnd(0);
+		}
+		else if (VoteRecord.count2 >= end)
+		{
+			choice.answer = 2;
+			choice.flag = 1;
+			choice.count = num;
+			setChoice(choice);
+			setType(MSG_STOP);
+			setVoteEnd(0);
+		}
+		else if (VoteRecord.count1 > VoteRecord.count2)
+		{
+			choice.answer = 1;
+			choice.flag = 0;
+			choice.count = num;
+			setChoice(choice);
+			setType(MSG_VOTE);
+		}
+		else if (VoteRecord.count2 > VoteRecord.count1)
+		{
+			choice.answer = 2;
+			choice.flag = 0;
+			choice.count = 0;
+			setChoice(choice);
+			setType(MSG_VOTE);
+		}
+		else
+		{
+			return;
+		}
+	}
+	return;
 }
 
 void CDecideApp::VersionCompare(int receive_version, char *ip, int port)
@@ -374,4 +519,37 @@ void CDecideApp::SendListMsg(char* ip, int port) {
 	free(pBuff);
 }
 
+void CDecideApp::SendVote() {
+	cJSON *root = cJSON_CreateObject();
+	if (!root){
+		AfxMessageBox(_T("Memory malloc error"));
+		return;
+	}
+	cJSON_AddStringToObject(root, "question", VoteQue.question);
+	cJSON_AddStringToObject(root, "answer1", VoteQue.answer1);
+	cJSON_AddStringToObject(root, "answer2", VoteQue.answer2);
+	char *pBuf = cJSON_PrintUnformatted(root);
 
+	MSGHEAD msg;
+	msg.type = MSG_STARTVOTE;
+	msg.length = strlen(pBuf);
+
+	int num = IPList.size();
+
+	for (int i = 0; i < num; i++) {
+		CClientSocket *pClient = new CClientSocket();
+		if (!pClient || !pClient->Create() || !pClient->Connect(CString(IPList[i].ip).GetBuffer(0), IPList[i].port))
+			continue;
+		pClient->SendMSG(pBuf, &msg);
+	}
+
+	cJSON_Delete(root);
+	free(pBuf);
+	type = MSG_VOTE;
+}
+
+void CDecideApp::StartVote() {
+	
+	//m_pMainWnd = &mainDlg;
+	mainDlg.DoModal();
+}

@@ -25,9 +25,9 @@ protected:
 public:
 	afx_msg void OnBnClickedOk();
 	void OnReceiveRequest();  //收到发起投票的请求
-	void OnSendOption(CString &choice);  //向其他节点发送自己的选择
-	void DisplayVote(CString &question, CString &answer1, CString &answer2);  //显示投票的问题和选项
-	void DisplayResult(CString &result) const;  //显示最终投票结果
-	CComboBox *m_option = (CComboBox *)GetDlgItem(IDC_COMBO1);
+	void DisplayVote();  //显示投票的问题和选项
+	void DisplayResult(int &index) const;  //显示最终投票结果
 
+	CComboBox m_option;
+	virtual BOOL OnInitDialog();
 };
