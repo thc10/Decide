@@ -87,7 +87,6 @@ void CVoteDlg::OnBnClickedOk()
 	theApp.setType(MSG_VOTE);
 	theApp.setVoteEnd(0);
 	//AfxMessageBox(_T("Vote Succeed!"));
-	Sleep(50000);
 }
 
 
