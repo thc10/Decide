@@ -6,6 +6,7 @@
 #include "Decide.h"
 #include "DecideDlg.h"
 #include "afxdialogex.h"
+#include "MSG.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,6 +52,9 @@ END_MESSAGE_MAP()
 
 CDecideDlg::CDecideDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_DECIDE_DIALOG, pParent)
+	, m_Question(_T(""))
+	, m_Answer1(_T(""))
+	, m_Answer2(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -58,12 +62,16 @@ CDecideDlg::CDecideDlg(CWnd* pParent /*=NULL*/)
 void CDecideDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_EDIT_ANSWER1, m_Answer1);
+	DDX_Text(pDX, IDC_EDIT_ANSWER2, m_Answer2);
+	DDX_Text(pDX, IDC_EDIT_QUESTION, m_Question);
 }
 
 BEGIN_MESSAGE_MAP(CDecideDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDOK, &CDecideDlg::OnBnClickedOk)
 END_MESSAGE_MAP()
 
 
@@ -154,3 +162,39 @@ HCURSOR CDecideDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+void CDecideDlg::OnBnClickedOk()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	UpdateData();  //用来刷新数据
+	if (m_Question.IsEmpty())
+	{
+		AfxMessageBox(_T("Empty Question!"));
+		return;
+	}
+	if (m_Answer1.IsEmpty() || m_Answer2.IsEmpty())
+	{
+		AfxMessageBox(_T("Empty Option!"));
+		return;
+	}
+
+	theApp.setType(MSG_STARTVOTE);
+
+	_bstr_t a(m_Question);
+	char* question = a;
+	_bstr_t b(m_Answer1);
+	char* answer1 = b;
+	_bstr_t c(m_Answer2);
+	char* answer2 = c;
+
+	LCHVOTE que;
+	strcpy_s(que.question, question);
+	strcpy_s(que.answer1, answer1);
+	strcpy_s(que.answer2, answer2);
+
+	theApp.setVoteQue(que);
+	theApp.SendVote();
+
+	//CDialogEx::OnOK();
+}

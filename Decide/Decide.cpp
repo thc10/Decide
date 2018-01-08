@@ -1,12 +1,12 @@
 
-// Decide.cpp : ∂®“Â”¶”√≥Ã–Úµƒ¿‡––Œ™°£
+// Decide.cpp : ÂÆö‰πâÂ∫îÁî®Á®ãÂ∫èÁöÑÁ±ªË°å‰∏∫„ÄÇ
 //
 
 #include "stdafx.h"
 #include "Decide.h"
 #include "DecideDlg.h"
 #include "LinkDlg.h"
-#include "ClientSocket.h"
+#include "VoteDlg.h"
 #include "ServerSocket.h"
 #include "cJSON.h"
 #include <time.h>
@@ -23,34 +23,36 @@ BEGIN_MESSAGE_MAP(CDecideApp, CWinApp)
 END_MESSAGE_MAP()
 
 
-// CDecideApp ππ‘Ï
+// CDecideApp ÊûÑÈÄ†
 
 CDecideApp::CDecideApp()
+	: is_start(0)
+	, voteend(0)
 {
-	// ÷ß≥÷÷ÿ–¬∆Ù∂Øπ‹¿Ì∆˜
+	// ÊîØÊåÅÈáçÊñ∞ÂêØÂä®ÁÆ°ÁêÜÂô®
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_RESTART;
 
-	// TODO: ‘⁄¥À¥¶ÃÌº”ππ‘Ï¥˙¬Î£¨
-	// Ω´À˘”–÷ÿ“™µƒ≥ı ºªØ∑≈÷√‘⁄ InitInstance ÷–
+	// TODO: Âú®Ê≠§Â§ÑÊ∑ªÂä†ÊûÑÈÄ†‰ª£Á†ÅÔºå
+	// Â∞ÜÊâÄÊúâÈáçË¶ÅÁöÑÂàùÂßãÂåñÊîæÁΩÆÂú® InitInstance ‰∏≠
 }
 
 
-// Œ®“ªµƒ“ª∏ˆ CDecideApp ∂‘œÛ
+// ÂîØ‰∏ÄÁöÑ‰∏Ä‰∏™ CDecideApp ÂØπË±°
 
 CDecideApp theApp;
 
 
-// CDecideApp ≥ı ºªØ
+// CDecideApp ÂàùÂßãÂåñ
 
 BOOL CDecideApp::InitInstance()
 {
-	// »Áπ˚“ª∏ˆ‘À––‘⁄ Windows XP …œµƒ”¶”√≥Ã–Ú«Âµ•÷∏∂®“™
-	//  π”√ ComCtl32.dll ∞Ê±æ 6 ªÚ∏¸∏ﬂ∞Ê±æ¿¥∆Ù”√ø… ”ªØ∑Ω Ω£¨
-	//‘Ú–Ë“™ InitCommonControlsEx()°£  ∑Ò‘Ú£¨Ω´Œﬁ∑®¥¥Ω®¥∞ø⁄°£
+	// Â¶ÇÊûú‰∏Ä‰∏™ËøêË°åÂú® Windows XP ‰∏äÁöÑÂ∫îÁî®Á®ãÂ∫èÊ∏ÖÂçïÊåáÂÆöË¶Å
+	// ‰ΩøÁî® ComCtl32.dll ÁâàÊú¨ 6 ÊàñÊõ¥È´òÁâàÊú¨Êù•ÂêØÁî®ÂèØËßÜÂåñÊñπÂºèÔºå
+	//ÂàôÈúÄË¶Å InitCommonControlsEx()„ÄÇ  Âê¶ÂàôÔºåÂ∞ÜÊó†Ê≥ïÂàõÂª∫Á™óÂè£„ÄÇ
 	INITCOMMONCONTROLSEX InitCtrls;
 	InitCtrls.dwSize = sizeof(InitCtrls);
-	// Ω´À¸…Ë÷√Œ™∞¸¿®À˘”–“™‘⁄”¶”√≥Ã–Ú÷– π”√µƒ
-	// π´π≤øÿº˛¿‡°£
+	// Â∞ÜÂÆÉËÆæÁΩÆ‰∏∫ÂåÖÊã¨ÊâÄÊúâË¶ÅÂú®Â∫îÁî®Á®ãÂ∫è‰∏≠‰ΩøÁî®ÁöÑ
+	// ÂÖ¨ÂÖ±Êéß‰ª∂Á±ª„ÄÇ
 	InitCtrls.dwICC = ICC_WIN95_CLASSES;
 	InitCommonControlsEx(&InitCtrls);
 
@@ -65,66 +67,71 @@ BOOL CDecideApp::InitInstance()
 
 	AfxEnableControlContainer();
 
-	// ¥¥Ω® shell π‹¿Ì∆˜£¨“‘∑¿∂‘ª∞øÚ∞¸∫¨
-	// »Œ∫Œ shell  ˜ ”Õºøÿº˛ªÚ shell ¡–±Ì ”Õºøÿº˛°£
+	// ÂàõÂª∫ shell ÁÆ°ÁêÜÂô®Ôºå‰ª•Èò≤ÂØπËØùÊ°ÜÂåÖÂê´
+	// ‰ªª‰Ωï shell Ê†ëËßÜÂõæÊéß‰ª∂Êàñ shell ÂàóË°®ËßÜÂõæÊéß‰ª∂„ÄÇ
 	CShellManager *pShellManager = new CShellManager;
 
-	// º§ªÓ°∞Windows Native°± ”æıπ‹¿Ì∆˜£¨“‘±„‘⁄ MFC øÿº˛÷–∆Ù”√÷˜Ã‚
+	// ÊøÄÊ¥ª‚ÄúWindows Native‚ÄùËßÜËßâÁÆ°ÁêÜÂô®Ôºå‰ª•‰æøÂú® MFC Êéß‰ª∂‰∏≠ÂêØÁî®‰∏ªÈ¢ò
 	CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
 
-	// ±Í◊º≥ı ºªØ
-	// »Áπ˚Œ¥ π”√’‚–©π¶ƒ‹≤¢œ£Õ˚ºı–°
-	// ◊Ó÷’ø…÷¥––Œƒº˛µƒ¥Û–°£¨‘Ú”¶“∆≥˝œ¬¡–
-	// ≤ª–Ë“™µƒÃÿ∂®≥ı ºªØ¿˝≥Ã
-	// ∏¸∏ƒ”√”⁄¥Ê¥¢…Ë÷√µƒ◊¢≤·±ÌœÓ
-	// TODO: ”¶  µ±–ﬁ∏ƒ∏√◊÷∑˚¥Æ£¨
-	// ¿˝»Á–ﬁ∏ƒŒ™π´ÀæªÚ◊È÷Ø√˚
+	// Ê†áÂáÜÂàùÂßãÂåñ
+	// Â¶ÇÊûúÊú™‰ΩøÁî®Ëøô‰∫õÂäüËÉΩÂπ∂Â∏åÊúõÂáèÂ∞è
+	// ÊúÄÁªàÂèØÊâßË°åÊñá‰ª∂ÁöÑÂ§ßÂ∞èÔºåÂàôÂ∫îÁßªÈô§‰∏ãÂàó
+	// ‰∏çÈúÄË¶ÅÁöÑÁâπÂÆöÂàùÂßãÂåñ‰æãÁ®ã
+	// Êõ¥ÊîπÁî®‰∫éÂ≠òÂÇ®ËÆæÁΩÆÁöÑÊ≥®ÂÜåË°®È°π
+	// TODO: Â∫îÈÄÇÂΩì‰øÆÊîπËØ•Â≠óÁ¨¶‰∏≤Ôºå
+	// ‰æãÂ¶Ç‰øÆÊîπ‰∏∫ÂÖ¨Âè∏ÊàñÁªÑÁªáÂêç
 	SetRegistryKey(_T("TALK"));
 	
 	m_Socket = new CServerSocket();
 	if (!m_Socket)
 	{
-		AfxMessageBox(_T("∂ØÃ¨¥¥Ω®∑˛ŒÒ∆˜Ã◊Ω”◊÷≥ˆ¥Ì£°"));
+		AfxMessageBox(_T("Âä®ÊÄÅÂàõÂª∫ÊúçÂä°Âô®Â•óÊé•Â≠óÂá∫Èîô!"));
 		return false;
 	}
 	CLinkDlg Linkdlg;
 	INT_PTR nResponse = Linkdlg.DoModal();
 	if (nResponse == IDOK)
 	{
-		// µ±”√ªß ‰»ÎIP∫Õ∂Àø⁄–≈œ¢∫Û£¨¥¥Ω®±æª˙÷∏∂®∂Àø⁄µƒ∑˛ŒÒ∆˜Ã◊Ω”◊÷
+		// ÂΩìÁî®Êà∑ËæìÂÖ•IPÂíåÁ´ØÂè£‰ø°ÊÅØÂêéÔºåÂàõÂª∫Êú¨Êú∫ÊåáÂÆöÁ´ØÂè£ÁöÑÊúçÂä°Âô®Â•óÊé•Â≠ó
 		if (!m_Socket->Create(theApp.m_Port))
 		{
-			AfxMessageBox(_T("¥¥Ω®Ã◊Ω”◊÷¥ÌŒÛ£°"));
+			AfxMessageBox(_T("ÂàõÂª∫Â•óÊé•Â≠óÈîôËØØ!"));
 			m_Socket->Close();
 			return false;
 		}
 		if (!m_Socket->Listen())
 		{
-			AfxMessageBox(_T("º‡Ã˝ ß∞‹£°"));
+			AfxMessageBox(_T("ÁõëÂê¨Â§±Ë¥•!"));
 			m_Socket->Close();
 			return false;
 		}
-		// ≈–∂œ «∑Òº”»Î»∫¡ƒ
+		// Âà§Êñ≠ÊòØÂê¶Âä†ÂÖ•Áæ§ËÅä
 		if (!((m_IP.CompareNoCase(groupIP) == 0) && (m_Port == groupPort)))
 		{
 			CClientSocket *pClient = new CClientSocket();
 			if (!pClient)
 			{
-				AfxMessageBox(_T("ƒ⁄¥Ê≤ª◊„£°"));
+				AfxMessageBox(_T("Error: No enough memory to create a Socket!"));
 				return false;
 			}
 			if (!pClient->Create())
 			{
-				AfxMessageBox(_T("¥¥Ω®Ã◊Ω”◊÷ ß∞‹£°"));
+				AfxMessageBox(_T("Error: fail to create a ClientSocket!"));
 				return false;
 			}
 			if (!pClient->Connect(theApp.groupIP.GetBuffer(0), theApp.groupPort))
 			{
-				AfxMessageBox(_T("¡¨Ω”»∫¡ƒ ß∞‹£°"));
+				AfxMessageBox(_T("Error: fail to connect group!"));
 				return false;
 			}
 			MSGHEAD msg;
 			cJSON *root = cJSON_CreateObject();
+			if (!root)
+			{
+				AfxMessageBox(_T("Memory malloc error"));
+				return false;
+			}
 			_bstr_t b(m_IP);
 			char* ip = b;
 			cJSON_AddStringToObject(root, "ip", ip);
@@ -141,29 +148,32 @@ BOOL CDecideApp::InitInstance()
 			pClient->Close();
 			delete pClient;
 		}
+		else {
+			_bstr_t b(m_IP);
+			char* ip = b;
+			IPINFO NewNode;
+			strncpy(NewNode.ip, ip, 20);
+			NewNode.port = m_Port;
+			theApp.IPList.push_back(NewNode);
+		}
 		type = MSG_VERSION;
 		version = -1;
 		AfxBeginThread(gossip, this);
 		CDecideDlg dlg;
-		m_pMainWnd = &dlg;
 		nResponse = dlg.DoModal();
-		if (nResponse == IDCANCEL)
-		{
-
-		}
 	}
 	else if (nResponse == IDCANCEL)
 	{
-		// TODO: ‘⁄¥À∑≈÷√¥¶¿Ì∫Œ ±”√
-		//  °∞»°œ˚°±¿¥πÿ±’∂‘ª∞øÚµƒ¥˙¬Î
+		// TODO: Âú®Ê≠§ÊîæÁΩÆÂ§ÑÁêÜ‰ΩïÊó∂Áî®
+		//  ‚ÄúÂèñÊ∂à‚ÄùÊù•ÂÖ≥Èó≠ÂØπËØùÊ°ÜÁöÑ‰ª£Á†Å
 	}
 	else if (nResponse == -1)
 	{
-		TRACE(traceAppMsg, 0, "æØ∏Ê: ∂‘ª∞øÚ¥¥Ω® ß∞‹£¨”¶”√≥Ã–ÚΩ´“‚Õ‚÷’÷π°£\n");
-		TRACE(traceAppMsg, 0, "æØ∏Ê: »Áπ˚ƒ˙‘⁄∂‘ª∞øÚ…œ π”√ MFC øÿº˛£¨‘ÚŒﬁ∑® #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS°£\n");
+		TRACE(traceAppMsg, 0, "Ë≠¶Âëä: ÂØπËØùÊ°ÜÂàõÂª∫Â§±Ë¥•ÔºåÂ∫îÁî®Á®ãÂ∫èÂ∞ÜÊÑèÂ§ñÁªàÊ≠¢„ÄÇ\n");
+		TRACE(traceAppMsg, 0, "Ë≠¶Âëä: Â¶ÇÊûúÊÇ®Âú®ÂØπËØùÊ°Ü‰∏ä‰ΩøÁî® MFC Êéß‰ª∂ÔºåÂàôÊó†Ê≥ï #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS„ÄÇ\n");
 	}
 
-	// …æ≥˝…œ√Ê¥¥Ω®µƒ shell π‹¿Ì∆˜°£
+	// Âà†Èô§‰∏äÈù¢ÂàõÂª∫ÁöÑ shell ÁÆ°ÁêÜÂô®„ÄÇ
 	if (pShellManager != NULL)
 	{
 		delete pShellManager;
@@ -173,8 +183,8 @@ BOOL CDecideApp::InitInstance()
 	ControlBarCleanUp();
 #endif
 
-	// ”…”⁄∂‘ª∞øÚ“—πÿ±’£¨À˘“‘Ω´∑µªÿ FALSE “‘±„ÕÀ≥ˆ”¶”√≥Ã–Ú£¨
-	//  ∂¯≤ª «∆Ù∂Ø”¶”√≥Ã–Úµƒœ˚œ¢±√°£
+	// Áî±‰∫éÂØπËØùÊ°ÜÂ∑≤ÂÖ≥Èó≠ÔºåÊâÄ‰ª•Â∞ÜËøîÂõû FALSE ‰ª•‰æøÈÄÄÂá∫Â∫îÁî®Á®ãÂ∫èÔºå
+	//  ËÄå‰∏çÊòØÂêØÂä®Â∫îÁî®Á®ãÂ∫èÁöÑÊ∂àÊÅØÊ≥µ„ÄÇ
 	return FALSE;
 }
 
@@ -209,6 +219,10 @@ BOOL CDecideApp::WChar2MByte(LPCWSTR srcBuff, LPSTR destBuff, int nlen)
 UINT CDecideApp::gossip(LPVOID lpParam) {
 	int num = 0, select = 0;
 	while (1) {
+		if (theApp.voteend)
+		{
+			continue;
+		}
 		num = theApp.IPList.size();
 		if (num == 0) {
 			Sleep(1000);
@@ -218,6 +232,10 @@ UINT CDecideApp::gossip(LPVOID lpParam) {
 		select = rand() % num;
 		char *ip = theApp.IPList[select].ip;
 		int port = theApp.IPList[select].port;
+		_bstr_t b(theApp.m_IP);
+		char* local = b;
+		if (strcmp(ip, local) == 0 && port == theApp.m_Port)
+			continue;
 		CClientSocket *pClient = new CClientSocket();
 		if (!pClient || !pClient->Create() || !pClient->Connect(CString(theApp.IPList[select].ip).GetBuffer(0), (UINT)theApp.IPList[select].port))
 			continue;
@@ -225,29 +243,313 @@ UINT CDecideApp::gossip(LPVOID lpParam) {
 		char* msg_toBsend = theApp.prepareMsg(theApp.type);
 		if (!msg_toBsend)
 			continue;
-		msg.type = theApp.type;
+		if (theApp.type == MSG_STOP)
+		{
+			msg.type = MSG_VOTE;
+			theApp.setVoteEnd(1);
+		}
+		else
+		{
+			msg.type = theApp.type;
+		}
 		msg.length = strlen(msg_toBsend);
 		pClient->SendMSG(msg_toBsend, &msg);
-		Sleep(2000);
+		Sleep(200);
 		pClient->Close();
 		delete pClient;
 	}
+	return 0;
 }
 
 char* CDecideApp::prepareMsg(int type) {
 	if (type == MSG_VERSION) {
 		int num = IPList.size();
 		int i = 0;
+		_bstr_t b(m_IP);
+		char* ip = b;
 		cJSON *root = cJSON_CreateObject();
 		cJSON_AddNumberToObject(root, "version", version);
-		return cJSON_PrintUnformatted(root);
+		cJSON_AddStringToObject(root, "ip", ip);
+		cJSON_AddNumberToObject(root, "port", m_Port);
+		char *pBuf = cJSON_PrintUnformatted(root);
+		cJSON_Delete(root);
+		return pBuf;
 	}
 	else if (type == MSG_VOTE) {
-
+		cJSON *root = cJSON_CreateObject();
+		cJSON_AddNumberToObject(root, "answer", MyChoice.answer);
+		cJSON_AddNumberToObject(root, "count", MyChoice.count);
+		cJSON_AddNumberToObject(root, "flag", MyChoice.flag);
+		char *pBuf = cJSON_PrintUnformatted(root);
+		cJSON_Delete(root);
+		return pBuf;
 	}
-	else {
-		return NULL;
+	else if (type == MSG_STOP) {
+		cJSON *root = cJSON_CreateObject();
+		cJSON_AddNumberToObject(root, "answer", MyChoice.answer);
+		cJSON_AddNumberToObject(root, "count", MyChoice.count);
+		cJSON_AddNumberToObject(root, "flag", MyChoice.flag);
+		char *pBuf = cJSON_PrintUnformatted(root);
+		cJSON_Delete(root);
+		return pBuf;
+	}
+	else
+		return "ad";
+}
+
+void CDecideApp::setVersion(int version) {
+	this->version = version;
+}
+
+void CDecideApp::setType(int type) {
+	this->type = type;
+}
+
+void CDecideApp::setIsStart(int is_start) {
+	this->is_start = is_start;
+}
+
+void CDecideApp::setVoteEnd(int sign)
+{
+	this->voteend = sign;
+}
+
+void CDecideApp::setVoteQue(LCHVOTE Que) {
+	memset(&VoteQue, 0, sizeof(VoteQue));
+	strcpy_s(this->VoteQue.question, Que.question);
+	strcpy_s(this->VoteQue.answer1, Que.answer1);
+	strcpy_s(this->VoteQue.answer2, Que.answer2);
+}
+
+void CDecideApp::setChoice(CHOICE choice) {
+	memset(&MyChoice, 0, sizeof(MyChoice));
+	this->MyChoice.answer = choice.answer;
+	this->MyChoice.count = choice.count;
+	this->MyChoice.flag = choice.flag;
+}
+
+void CDecideApp::setRecord(RECORD record) {
+	memset(&VoteRecord, 0, sizeof(VoteRecord));
+	this->VoteRecord.count1 = record.count1;
+	this->VoteRecord.count2 = record.count2;
+	this->HandleRecord();
+}
+
+void CDecideApp::HandleChoice(CHOICE choice) {
+	int num = IPList.size();
+	if (choice.flag == 1)  //Received 2f+1 same options from other nodes, this is the final result
+	{
+		if (this->MyChoice.flag == 0)  //Êú™Ë¢´ÊÑüÊüì
+		{
+			CHOICE rechoice;
+			rechoice.answer = choice.answer;
+			rechoice.flag = choice.flag;
+			rechoice.count = num;
+			setChoice(rechoice);
+			setType(MSG_STOP);
+			setVoteEnd(0);
+			mainDlg.DisplayResult(MyChoice.answer);
+			return;
+		}
+		else  //Â∑≤ÁªèË¢´ÊÑüÊüì
+		{
+			CHOICE rechoice;
+			rechoice.answer = choice.answer;
+			rechoice.flag = choice.flag;
+			rechoice.count = choice.count - 1;
+			setChoice(rechoice);
+			setType(MSG_STOP);
+			setVoteEnd(0);
+			mainDlg.DisplayResult(MyChoice.answer);
+			return;
+		}
+	}
+	else if (choice.flag == 0)  //ËØ¥ÊòéÂè™ÊòØ‰∏ÄÊ¨°ÊôÆÈÄöÁöÑÈÄâÊã©Ôºå‰∏çÊòØÊúÄÁªàÁªìÊûú
+	{
+		if (MyChoice.flag == 1)
+		{
+			return;
+		}
+		RECORD rerecord;
+		rerecord.count1 = VoteRecord.count1;
+		rerecord.count2 = VoteRecord.count2;
+		if (choice.answer == 1)
+		{
+			rerecord.count1 += 1;
+		}
+		else if (choice.answer == 2)
+		{
+			rerecord.count2 += 1;
+		}
+		else
+		{
+			return;
+		}
+		setRecord(rerecord);
+		setType(MSG_VOTE);
+		return;
+	}	
+}
+
+void CDecideApp::HandleRecord()
+{
+	int num = IPList.size(); 
+	int end = ((num * 2 + 1) % 3) ? ((num * 2 + 1) / 3) : (((num * 2 + 1) / 3) + 1);
+	if (VoteRecord.count1 + VoteRecord.count2 >= end)  //Êî∂Âà∞ÁöÑÂåÖ‰∏çÂ∞ë‰∫é2f+1
+	{
+		CHOICE choice;
+		if (VoteRecord.count1 >= end)
+		{
+			choice.answer = 1;
+			choice.flag = 1;
+			choice.count = num;
+			setChoice(choice);
+			setType(MSG_STOP);
+			setVoteEnd(0);
+		}
+		else if (VoteRecord.count2 >= end)
+		{
+			choice.answer = 2;
+			choice.flag = 1;
+			choice.count = num;
+			setChoice(choice);
+			setType(MSG_STOP);
+			setVoteEnd(0);
+		}
+		else if (VoteRecord.count1 > VoteRecord.count2)
+		{
+			choice.answer = 1;
+			choice.flag = 0;
+			choice.count = num;
+			setChoice(choice);
+			setType(MSG_VOTE);
+		}
+		else if (VoteRecord.count2 > VoteRecord.count1)
+		{
+			choice.answer = 2;
+			choice.flag = 0;
+			choice.count = 0;
+			setChoice(choice);
+			setType(MSG_VOTE);
+		}
+		else
+		{
+			return;
+		}
+	}
+	return;
+}
+
+void CDecideApp::VersionCompare(int receive_version, char *ip, int port)
+{
+	//Êî∂Âà∞ÁâàÊú¨Âè∑Áõ∏Âêå
+	if (theApp.version == receive_version)
+	{
+		return;
+	}
+	//Êî∂Âà∞ÁâàÊú¨Âè∑Â∞è‰∫éÊé•Êî∂ÁöÑÔºåÂêëÂØπÊñπËØ∑Ê±Çlist
+	else if (theApp.version < receive_version)
+	{
+		cJSON *root = cJSON_CreateObject();
+		_bstr_t b(m_IP);
+		char* ip = b;
+		cJSON_AddStringToObject(root, "ip", ip);
+		cJSON_AddNumberToObject(root, "port", m_Port);
+		char* pBuf = cJSON_PrintUnformatted(root);
+		MSGHEAD msg;
+		msg.type = MSG_REQUEST;
+		msg.length = strlen(pBuf);
+
+		CClientSocket *pClient = new CClientSocket();
+		if (pClient && pClient->Create() && pClient->Connect(CString(ip).GetBuffer(0), port)) {
+			pClient->SendMSG(pBuf, &msg);
+			pClient->Close();
+		}
+		delete pClient;
+		cJSON_Delete(root);
+		free(pBuf);
+	}
+	else
+	{
+		SendListMsg(ip, port);
 	}
 }
 
+void CDecideApp::SendListMsg(char* ip, int port) {
+	MSGHEAD msg;
 
+	cJSON *json_root = cJSON_CreateObject();
+	if (!json_root)
+	{
+		AfxMessageBox(_T("Memory malloc error"));
+		return;
+	}
+
+	cJSON *root = cJSON_CreateArray();
+	if (!root)
+	{
+		AfxMessageBox(_T("Memory malloc error"));
+		return;
+	}
+
+	cJSON_AddNumberToObject(json_root, "version", theApp.version);
+	int num = theApp.IPList.size();
+
+	for (int i = 0; i < num; i++)
+	{
+		cJSON *temp = cJSON_CreateObject();
+		cJSON_AddStringToObject(temp, "ip", theApp.IPList[i].ip);
+		cJSON_AddNumberToObject(temp, "port", theApp.IPList[i].port);
+		cJSON_AddItemToArray(root, temp);
+	}
+	cJSON_AddItemToObject(json_root, "data", root);
+
+	char *pBuff = cJSON_PrintUnformatted(json_root);
+
+	msg.type = MSG_LIST;
+	msg.length = strlen(pBuff);
+
+	CClientSocket *pClient = new CClientSocket();
+	if (pClient && pClient->Create() && pClient->Connect(CString(ip).GetBuffer(0), port)) {
+		pClient->SendMSG(pBuff, &msg);
+		pClient->Close();
+	}
+
+	cJSON_Delete(root);
+	free(pBuff);
+}
+
+void CDecideApp::SendVote() {
+	cJSON *root = cJSON_CreateObject();
+	if (!root){
+		AfxMessageBox(_T("Memory malloc error"));
+		return;
+	}
+	cJSON_AddStringToObject(root, "question", VoteQue.question);
+	cJSON_AddStringToObject(root, "answer1", VoteQue.answer1);
+	cJSON_AddStringToObject(root, "answer2", VoteQue.answer2);
+	char *pBuf = cJSON_PrintUnformatted(root);
+
+	MSGHEAD msg;
+	msg.type = MSG_STARTVOTE;
+	msg.length = strlen(pBuf);
+
+	int num = IPList.size();
+
+	for (int i = 0; i < num; i++) {
+		CClientSocket *pClient = new CClientSocket();
+		if (!pClient || !pClient->Create() || !pClient->Connect(CString(IPList[i].ip).GetBuffer(0), IPList[i].port))
+			continue;
+		pClient->SendMSG(pBuf, &msg);
+	}
+
+	cJSON_Delete(root);
+	free(pBuf);
+	type = MSG_VOTE;
+}
+
+void CDecideApp::StartVote() {
+	
+	//m_pMainWnd = &mainDlg;
+	mainDlg.DoModal();
+}

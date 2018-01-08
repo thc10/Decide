@@ -10,6 +10,8 @@
 
 #include "resource.h"		// 主符号
 #include "ServerSocket.h"
+#include "ClientSocket.h"
+#include "VoteDlg.h"
 #include "MSG.h"
 #include <vector>
 using namespace std;
@@ -28,13 +30,20 @@ public:
 // 重写
 public:
 	virtual BOOL InitInstance();
-	CString m_IP;		//本机IP
-	UINT m_Port;		//侦听端口
-	CString groupIP;	//群聊房间IP
-	UINT groupPort;		//群聊房间端口
-	vector<IPINFO> IPList;	//IP容器
-	int type;			//gossip同步的类型
-	int version;		//版本号
+	CVoteDlg mainDlg;
+	CString result;     //final result
+	CString m_IP;		//local IP
+	UINT m_Port;		//listened port
+	CString groupIP;	//IP of the room
+	UINT groupPort;		//port of the room
+	vector<IPINFO> IPList;	//IP container
+	int type;			//the type of gossip message
+	int is_start;		//is voting start?
+	int voteend;		//is voting end?
+	int version;		//verison of IPList
+	LCHVOTE VoteQue;	//Info of vote question
+	CHOICE MyChoice;	//local choice
+	RECORD VoteRecord;	//count the recieved vote msg
 // 实现
 
 	CServerSocket* GetServerSocket() const;
@@ -43,6 +52,20 @@ public:
 	BOOL WChar2MByte(LPCWSTR srcBuff, LPSTR destBuff, int nlen);
 	static UINT gossip(LPVOID lpParam);
 	char* prepareMsg(int type);
+public:
+	void setVersion(int version);
+	void setType(int type);
+	void setVoteQue(LCHVOTE Que);
+	void setChoice(CHOICE choice);
+	void setRecord(RECORD record);
+	void setIsStart(int is_start);
+	void setVoteEnd(int sign);
+	void HandleChoice(CHOICE choice);
+	void HandleRecord();
+	void VersionCompare(int receive_version, char* ip, int port);
+	void SendListMsg(char* ip, int port);
+	void SendVote();
+	void StartVote();
 };
 
 extern CDecideApp theApp;

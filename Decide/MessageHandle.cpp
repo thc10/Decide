@@ -3,6 +3,7 @@
 #include "Decide.h"
 #include "MessageHandle.h"
 #include "MSG.h"
+#include "VoteDlg.h"
 
 void HandleLoginMsg(char *pMsg)
 {
@@ -39,8 +40,8 @@ void HandleLoginMsg(char *pMsg)
 
 	cJSON_Delete(root);
 
-	//AfxMessageBox(_T("新的用户加入"));
-	theApp.version++;
+	theApp.SendListMsg(ip, port);
+	theApp.setVersion(theApp.version + 1);
 }
 
 void HandleVersionMsg(char *pMsg) {
@@ -61,16 +62,191 @@ void HandleVersionMsg(char *pMsg) {
 		return;
 	}
 	int version = temp->valueint;
-	CString str;
-	str.Format(_T("version is %d。"), theApp.version);
-	AfxMessageBox(str);
+	temp = cJSON_GetObjectItem(root, "ip");
+	if (!temp)
+	{
+		AfxMessageBox(_T("param错误"));
+		cJSON_Delete(root);
+		return;
+	}
+	char *ip = temp->valuestring;
+	temp = cJSON_GetObjectItem(root, "port");
+	if (!temp)
+	{
+		AfxMessageBox(_T("param error"));
+		return;
+	}
+	int port = temp->valueint;
+
+	if (version != theApp.version)
+		theApp.VersionCompare(version, ip, port);
 	cJSON_Delete(root);
 }
 
-void HandleRequstMsg(char *pMsg) {
-	AfxMessageBox(_T("recvie requst msgs"));
+void HandleListMsg(char *pMsg)
+{
+	cJSON *json_root = cJSON_Parse(pMsg);
+	if (!json_root)
+	{
+		AfxMessageBox(_T("Message format error"));
+		return;
+	}
+
+	cJSON *temp = cJSON_GetObjectItem(json_root, "version");
+	if (!temp)
+	{
+		AfxMessageBox(_T("param error"));
+		cJSON_Delete(json_root);
+		return;
+	}
+
+	theApp.setVersion(temp->valueint);
+	temp = cJSON_GetObjectItem(json_root, "data");
+	if (!temp)
+	{
+		AfxMessageBox(_T("param error"));
+		return;
+	}
+
+	theApp.IPList.clear();	//清空IP列表
+	//重新写IP列表
+	int num = cJSON_GetArraySize(temp);
+	cJSON *Node = NULL;
+	cJSON *NodeIP = NULL;
+	cJSON *NodePort = NULL;
+	for (int i = 0; i < num; i++)
+	{
+		Node = cJSON_GetArrayItem(temp, i);
+		if (!Node)
+			break;
+		NodeIP = cJSON_GetObjectItem(Node, "ip");
+		if (!NodeIP)
+		{
+			AfxMessageBox(_T("param error"));
+			break;
+		}
+		NodePort = cJSON_GetObjectItem(Node, "port");
+		if (!NodePort)
+		{
+			AfxMessageBox(_T("param error"));
+			break;
+		}
+
+		IPINFO IPNode;
+		strncpy(IPNode.ip, NodeIP->valuestring, 20);
+		IPNode.port = NodePort->valueint;
+
+		theApp.IPList.push_back(IPNode);
+	}
+
+	cJSON_Delete(json_root);
 }
 
-void HandleListMsg(char *pMsg) {
-	AfxMessageBox(_T("recvie list msgs"));
+void HandleRequstMsg(char *pMsg)
+{
+	cJSON *root = NULL;
+	cJSON *temp = NULL;
+
+	root = cJSON_Parse(pMsg);
+	if (!root)
+	{
+		AfxMessageBox(_T("param错误"));
+		cJSON_Delete(root);
+		return;
+	}
+
+	temp = cJSON_GetObjectItem(root, "ip");
+	if (!temp)
+	{
+		AfxMessageBox(_T("param错误"));
+		cJSON_Delete(root);
+		return;
+	}
+	char *ip = temp->valuestring;
+	temp = cJSON_GetObjectItem(root, "port");
+	if (!temp)
+	{
+		AfxMessageBox(_T("param error"));
+		return;
+	}
+	int port = temp->valueint;
+
+	theApp.SendListMsg(ip, port);
+}
+
+void HandleVoteMsg(char *pMsg) {
+	if (theApp.is_start == 0)
+		return;
+	cJSON *root = NULL;
+	cJSON *temp = NULL;
+	CHOICE MyChoice;
+
+	root = cJSON_Parse(pMsg);
+	if (!root) {
+		AfxMessageBox(_T("param error"));
+		cJSON_Delete(root);
+		return;
+	}
+	temp = cJSON_GetObjectItem(root, "answer");
+	if (!temp) {
+		AfxMessageBox(_T("param error"));
+		cJSON_Delete(root);
+		return;
+	}
+	MyChoice.answer = temp->valueint;
+	temp = cJSON_GetObjectItem(root, "flag");
+	if (!temp) {
+		AfxMessageBox(_T("param error"));
+		cJSON_Delete(root);
+		return;
+	}
+	MyChoice.flag = temp->valueint;
+	temp = cJSON_GetObjectItem(root, "count");
+	if (!temp) {
+		AfxMessageBox(_T("param error"));
+		cJSON_Delete(root);
+		return;
+	}
+	MyChoice.count = temp->valueint;
+
+	theApp.HandleChoice(MyChoice);
+
+}
+
+void HandleStartVoteMsg(char *pMsg) {
+	cJSON *root = NULL;
+	cJSON *temp = NULL;
+	LCHVOTE vote;
+
+	root = cJSON_Parse(pMsg);
+	if (!root) {
+		AfxMessageBox(_T("param error"));
+		cJSON_Delete(root);
+		return;
+	}
+	temp = cJSON_GetObjectItem(root, "question");
+	if (!temp) {
+		AfxMessageBox(_T("param error"));
+		cJSON_Delete(root);
+		return;
+	}
+	strcpy_s(vote.question, temp->valuestring);
+	temp = cJSON_GetObjectItem(root, "answer1");
+	if (!temp) {
+		AfxMessageBox(_T("param error"));
+		cJSON_Delete(root);
+		return;
+	}
+	strcpy_s(vote.answer1, temp->valuestring);
+	temp = cJSON_GetObjectItem(root, "answer2");
+	if (!temp) {
+		AfxMessageBox(_T("param error"));
+		cJSON_Delete(root);
+		return;
+	}
+	strcpy_s(vote.answer2, temp->valuestring);
+	
+	theApp.setVoteQue(vote);
+	theApp.setIsStart(0);
+	theApp.StartVote();
 }

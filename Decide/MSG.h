@@ -1,39 +1,41 @@
 #pragma once
-const int MSG_LOGIN = 0;	//加入群聊
-const int MSG_VERSION = 1;	//版本信息
-const int REQUEST = 2;		//本机IP以及侦听端口信息
-const int MSG_LIST = 3;		//用户列表
-const int MSG_VOTE = 4;		//投票信息
+const int MSG_LOGIN = 0;	//Add into room
+const int MSG_VERSION = 1;	//Version Msg
+const int MSG_REQUEST = 2;	//Requet for IPList
+const int MSG_LIST = 3;		//Send IPList
+const int MSG_VOTE = 4;		//Vote Msg
+const int MSG_STARTVOTE = 5;	//Strat vote
+const int MSG_STOP = 6;  //Stop Vote
 
-							//消息头
-typedef struct msg {
-	int type;
-	int length;
-}MSGHEAD;
-
-// IP及侦听端口信息
+// the Message of IP and Port
 typedef struct ipinfo {
 	char ip[20];
 	int port;
 }IPINFO;
 
-//发起投票：由集群中的某一个节点发起投票，包括问题和答案，发送给集群中的所有节点（包括发起投票的节点）
+// th Head of Message
+typedef struct msg {
+	int type;
+	int length;
+	IPINFO ipinfo;
+}MSGHEAD;
+// Start Vote : One of the Nodes Input the Question and Two Answers, Then Send This Struct to Other Nodes 
 typedef struct lchvote
 {
-	char question[100];  //需要投票进行选择的问题
-	char answer1[50];  //选择1
-	char answer2[50];  //选择2
+	char question[100];
+	char answer1[50];  
+	char answer2[50]; 
 }LCHVOTE;
 
-//做出选择：每个节点随机选择一个节点（节点不能重复)发送自己的选择
+// Make the Choice 
 typedef struct choice
 {
 	int answer;
-	int flag;  //标识这是一次普通的选择还是最终选择，如果flag为1，说明该节点已经收到了2f+1个相同的选择,产生了最终结果
-	int count;  //最终结果经过的节点数，如果不是最终结果，则始终为0，当最终结果经过的节点数达到阈值时，停止发送
+	int flag;  //Make if Make the Final Choice，if flag equal 1，it means this node has recive 2f+1 choices and get the final result
+	int count;  //avoid the message move from one node to another node forever , use count to kill message
 }CHOICE;
 
-//每个节点维护一个结构，记录他所收到的其他节点的选择，当收到选择为2f+1个时，根据多数节点的选择改变自己的选择
+//count the choice recieved
 typedef struct record
 {
 	int count1;  //该节点收到其他节点的选择中，选择选项1的节点个数

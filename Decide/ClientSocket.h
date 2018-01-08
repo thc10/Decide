@@ -1,6 +1,5 @@
 #pragma once
 #include "MSG.h"
-// CClientSocket ÃüÁîÄ¿±ê
 
 class CClientSocket : public CSocket
 {
